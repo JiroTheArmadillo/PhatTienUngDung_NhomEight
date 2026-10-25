@@ -1,3 +1,20 @@
+<?php
+require_once dirname(__FILE__) . '/../php/control_baocao/BaoCao.php';
+function h($value) { return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8'); }
+function money($value) { return number_format((float)$value, 0, ',', '.') . ' đ'; }
+function fmtDate($value) { return $value ? date('d/m/Y H:i:s', strtotime($value)) : 'Chưa kết thúc'; }
+$error = '';
+$nhanVien = array();
+$caLamViec = array();
+try {
+    $baoCao = new BaoCao();
+    $nhanVien = $baoCao->getDanhSachNhanVien();
+    $caLamViec = $baoCao->getDanhSachCa();
+} catch (Exception $e) {
+    $error = $e->getMessage();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -142,73 +159,33 @@
     </div>
 
     <!-- Main Content -->
-    <div class="main-content">
+     <div class="main-content">
         <div class="header">
             <div class="user-info">Chào mừng ! Vinh</div>
         </div>
         
         <div class="content">
-            <!-- Báo cáo nhân viên -->
+            <?php if ($error !== '') { ?><p style="color:#b00020;padding:12px;background:white;"><?php echo h($error); ?></p><?php } ?>
             <div class="report-section nhanVien-report">
                 <h2>Báo Cáo Thống Kê Nhân Viên</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Mã NV</th>
-                            <th>Họ và Tên</th>
-                            <th>Giới tính</th>
-                            <th>Số điện thoại</th>
-                            <th>Chức vụ</th>
-                            <th>Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Đoạn này sau này dùng vòng lặp PHP để đổ dữ liệu từ MySQL lên -->
-                        <tr>
-                            <td>NV001</td>
-                            <td>Nguyễn Văn Vinh</td>
-                            <td>Nam</td>
-                            <td>0901234567</td>
-                            <td>Quản lý</td>
-                            <td>
-                                <a href="Form_BaoCaoNhanVien.html">Xem</a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <table><thead><tr><th>Mã NV</th><th>Họ và Tên</th><th>Giới tính</th><th>Số điện thoại</th><th>Chức vụ</th><th>Thao tác</th></tr></thead><tbody>
+                <?php if (isset($nhanVien)) { foreach ($nhanVien as $nv) { ?>
+                <tr><td><?php echo h($nv['ma_nv']); ?></td><td><?php echo h($nv['ho_ten']); ?></td><td><?php echo h($nv['gioi_tinh']); ?></td><td><?php echo h($nv['so_dien_thoai']); ?></td><td><?php echo h($nv['chuc_vu']); ?></td><td><a href="Form_BaoCaoNhanVien.php?ma_nv=<?php echo urlencode($nv['ma_nv']); ?>">Xem</a></td></tr>
+                <?php } if (count($nhanVien) === 0) { ?><tr><td colspan="6">Chưa có dữ liệu nhân viên.</td></tr><?php } } ?>
+                </tbody></table>
             </div>
-
-            <!-- Báo cáo ca làm việc -->
             <div class="report-section ca-report">
                 <h2>Báo Cáo Thống Kê Ca Làm Việc</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Mã ca</th>
-                            <th>Thời gian bắt đầu</th>
-                            <th>Thời gian kết thúc</th>
-                            <th>Trạng thái</th>
-                            <th>Nhân viên mở ca</th>
-                            <th>Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Đoạn này sau này dùng vòng lặp PHP để đổ dữ liệu từ MySQL lên -->
-                        <tr>
-                            <td>C001</td>
-                            <td>26/10/2026 08:00:00</td>
-                            <td>26/10/2026 16:00:00</td>
-                            <td>Đã kết thúc</td>
-                            <td>NV001</td>
-                            <td>
-                                <a href="Form_BaoCaoCa.html">Xem</a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <table><thead><tr><th>Mã ca</th><th>Thời gian bắt đầu</th><th>Thời gian kết thúc</th><th>Trạng thái</th><th>Nhân viên mở ca</th><th>Thao tác</th></tr></thead><tbody>
+                <?php if (isset($caLamViec)) { foreach ($caLamViec as $ca) { ?>
+                <tr><td><?php echo h($ca['ma_ca']); ?></td><td><?php echo h(fmtDate($ca['bat_dau'])); ?></td><td><?php echo h(fmtDate($ca['ket_thuc'])); ?></td><td><?php echo h($ca['trang_thai']); ?></td><td><?php echo h($ca['ma_nv_mo_ca']); ?></td><td><a href="Form_BaoCaoCa.php?ma_ca=<?php echo urlencode($ca['ma_ca']); ?>">Xem</a></td></tr>
+                <?php } if (count($caLamViec) === 0) { ?><tr><td colspan="6">Chưa có dữ liệu ca làm việc.</td></tr><?php } } ?>
+                </tbody></table>
             </div>
         </div>
     </div>
+
+
     
 </body>
 </html>

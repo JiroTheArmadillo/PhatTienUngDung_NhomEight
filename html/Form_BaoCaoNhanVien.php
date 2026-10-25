@@ -1,3 +1,18 @@
+<?php
+require_once dirname(__FILE__) . '/../php/control_baocao/BaoCao.php';
+function h($value) { return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8'); }
+function money($value) { return number_format((float)$value, 0, ',', '.') . ' đ'; }
+function fmtDate($value) { return $value ? date('d/m/Y H:i:s', strtotime($value)) : 'Chưa kết thúc'; }
+$error = '';
+try {
+    $baoCao = new BaoCao();
+    $ma = isset($_GET['ma_nv']) ? $_GET['ma_nv'] : '';
+    $report = $baoCao->getBaoCaoNhanVien($ma);
+} catch (Exception $e) {
+    $error = $e->getMessage();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -174,52 +189,19 @@
         </div>
         
         <div class="content">
-            
-            <div class="target-info">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Mã NV</th>
-                            <th>Họ và Tên</th>
-                            <th>Giới tính</th>
-                            <th>Số điện thoại</th>
-                            <th>Chức vụ</th>
-                            <th>Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Đoạn này sau này dùng vòng lặp PHP để đổ dữ liệu từ MySQL lên -->
-                        <tr>
-                            <td>NV001</td>
-                            <td>Nguyễn Văn Vinh</td>
-                            <td>Nam</td>
-                            <td>0901234567</td>
-                            <td>Quản lý</td>
-                            <td>
-                                <a href="GD_BaoCao.html">Xong</a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <?php if ($error !== '') { ?><p style="color:#b00020;"><?php echo h($error); ?></p><?php } ?>
+            <?php if (isset($report) && $report !== null) { $info = $report['thong_tin']; $stats = $report['thong_ke']; ?>
+            <div class="target-info"><table><thead><tr><th>Mã NV</th><th>Họ và Tên</th><th>Giới tính</th><th>Số điện thoại</th><th>Chức vụ</th><th>Thao tác</th></tr></thead><tbody>
+            <tr><td><?php echo h($info['ma_nv']); ?></td><td><?php echo h($info['ho_ten']); ?></td><td><?php echo h($info['gioi_tinh']); ?></td><td><?php echo h($info['so_dien_thoai']); ?></td><td><?php echo h($info['chuc_vu']); ?></td><td><a href="GD_BaoCao.php">Xong</a></td></tr>
+            </tbody></table></div>
             <div class="target-report">
-                <div class="total-invoice">
-                    <label>Tổng số hóa đơn</label>
-                    <div class="total-invoice-value">
-                            42342342
-                    </div>
-                    
-                </div>
-                <div class="total-venue">
-                    <label>Tổng doanh thu</label>
-                    <div class="total-venue-value">
-                        424234
-                    </div>
-                </div>
+                <div class="total-invoice"><label>Tổng số hóa đơn</label><div class="total-invoice-value"><?php echo h($stats['tong_hoa_don']); ?></div></div>
+                <div class="total-venue"><label>Tổng doanh thu</label><div class="total-venue-value"><?php echo h(money($stats['tong_doanh_thu'])); ?></div></div>
             </div>
-            
+            <?php } elseif ($error === '') { ?><p>Không tìm thấy dữ liệu. <a href="GD_BaoCao.php">Quay lại báo cáo</a></p><?php } ?>
         </div> 
     </div>
     
+
 </body>
 </html>

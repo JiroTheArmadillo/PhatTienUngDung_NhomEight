@@ -1,3 +1,17 @@
+<?php
+require_once dirname(__FILE__) . '/../php/control_baocao/BaoCao.php';
+function h($value) { return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8'); }
+function money($value) { return number_format((float)$value, 0, ',', '.') . ' đ'; }
+function fmtDate($value) { return $value ? date('d/m/Y H:i:s', strtotime($value)) : 'Chưa kết thúc'; }
+$error = '';
+try {
+    $baoCao = new BaoCao();
+    $ma = isset($_GET['ma_ca']) ? $_GET['ma_ca'] : '';
+    $report = $baoCao->getBaoCaoCa($ma);
+} catch (Exception $e) {
+    $error = $e->getMessage();
+}
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -146,11 +160,6 @@
             font-size: 12px;
         }
 
-       
-
-        
-
-        
     </style>
 </head>
 <body>
@@ -174,50 +183,16 @@
         </div>
         
         <div class="content">
-            
-            <div class="target-info">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Mã ca</th>
-                            <th>Thời gian bắt đầu</th>
-                            <th>Thời gian kết thúc</th>
-                            <th>Trạng thái</th>
-                            <th>Nhân viên mở ca</th>
-                            <th>Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Đoạn này sau này dùng vòng lặp PHP để đổ dữ liệu từ MySQL lên -->
-                        <tr>
-                            <td>C001</td>
-                            <td>26/10/2026 08:00:00</td>
-                            <td>26/10/2026 16:00:00</td>
-                            <td>Đã kết thúc</td>
-                            <td>NV001</td>
-                            <td>
-                                <a href="GD_BaoCao.html">Xong</a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+            <?php if ($error !== '') { ?><p style="color:#b00020;"><?php echo h($error); ?></p><?php } ?>
+            <?php if (isset($report) && $report !== null) { $info = $report['thong_tin']; $stats = $report['thong_ke']; ?>
+            <div class="target-info"><table><thead><tr><th>Mã ca</th><th>Thời gian bắt đầu</th><th>Thời gian kết thúc</th><th>Trạng thái</th><th>Nhân viên mở ca</th><th>Thao tác</th></tr></thead><tbody>
+            <tr><td><?php echo h($info['ma_ca']); ?></td><td><?php echo h(fmtDate($info['bat_dau'])); ?></td><td><?php echo h(fmtDate($info['ket_thuc'])); ?></td><td><?php echo h($info['trang_thai']); ?></td><td><?php echo h($info['ma_nv_mo_ca']); ?></td><td><a href="GD_BaoCao.php">Xong</a></td></tr>
+            </tbody></table></div>
             <div class="target-report">
-                <div class="total-invoice">
-                    <label>Tổng số hóa đơn</label>
-                    <div class="total-invoice-value">
-                            42342342
-                    </div>
-                    
-                </div>
-                <div class="total-venue">
-                    <label>Tổng doanh thu</label>
-                    <div class="total-venue-value">
-                        424234
-                    </div>
-                </div>
+                <div class="total-invoice"><label>Tổng số hóa đơn</label><div class="total-invoice-value"><?php echo h($stats['tong_hoa_don']); ?></div></div>
+                <div class="total-venue"><label>Tổng doanh thu</label><div class="total-venue-value"><?php echo h(money($stats['tong_doanh_thu'])); ?></div></div>
             </div>
-            
+            <?php } elseif ($error === '') { ?><p>Không tìm thấy dữ liệu. <a href="GD_BaoCao.php">Quay lại báo cáo</a></p><?php } ?>
         </div> 
     </div>
     
