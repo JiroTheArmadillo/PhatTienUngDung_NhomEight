@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo Cáo Thống Kê - EIGHT</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+           
+        }
+
+        body {
+            display: flex;
+            flex-direction: row;
+            width: 100vw;
+            height: 100vh;
+            background-color: #f4f6f9;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            width: 250px;
+            background-color: #1a252f;
+            flex-shrink: 0;
+        }
+
+        .sidebar .logo {
+            padding: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            color: white;
+            background-color: #2c3e50;
+           
+        }
+
+        .sidebar a {
+            padding: 15px 20px;
+            color: #bdc3c7;
+            text-decoration: none;
+            font-size: 14px;
+            
+        }
+
+        .sidebar a:hover, 
+        .sidebar a.active {
+            background-color: #34495e;
+            color: white;
+        }
+
+        /* Main Content */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* Header */
+        .main-content .header {
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 15px 30px;
+          
+        }
+
+        .user-info {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+    
+        .content {
+            padding: 30px;
+        }
+
+        .report-section {
+            background: #ffffff;
+            padding: 20px;
+           
+            margin-bottom: 20px;
+        }
+
+        .report-section h2 {
+            
+            color: #2c3e50;
+            font-size: 18px;
+            padding-bottom: 10px;
+        }
+       
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            
+        }
+
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: #4a5568;
+            font-weight: bold;
+        }
+
+    
+
+        td a {
+            background-color: #3498db;
+            color: white;
+            padding: 6px 12px;
+         
+            text-decoration: none;
+            font-size: 12px;
+        }
+
+      
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">EIGHT</div>
+        <a href="GD_TrangChu.html">Dashboard</a>
+        <a href="GD_QuanLyBanHang.html">Quản lý Bán Hàng</a>
+        <a href="GD_QuanLyNhanVien.html">Quản lý nhân viên</a>
+        <a href="GD_LapPhieuDatHat.html">Lập phiếu đặt hàng</a>
+        <a href="GD_DuyetPhieuDatHat.html">Duyệt phiếu đặt hàng</a>
+        <a href="GD_XuLyHoanTra.html">Xử lý hoàn trả</a>
+        <a href="logout.php" style="margin-top: auto; color: #e74c3c;">Đăng xuất</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <div class="user-info">Chào mừng ! Vinh</div>
+        </div>
+        
+        <div class="content">
+            <!-- Báo cáo nhân viên -->
+            <div class="report-section nhanVien-report">
+                <h2>Báo Cáo Thống Kê Nhân Viên</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mã NV</th>
+                            <th>Họ và Tên</th>
+                            <th>Giới tính</th>
+                            <th>Số điện thoại</th>
+                            <th>Chức vụ</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Đoạn này sau này dùng vòng lặp PHP để đổ dữ liệu từ MySQL lên -->
+                        <tr>
+                            <td>NV001</td>
+                            <td>Nguyễn Văn Vinh</td>
+                            <td>Nam</td>
+                            <td>0901234567</td>
+                            <td>Quản lý</td>
+                            <td>
+                                <a href="Form_BaoCaoNhanVien.html">Xem</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Báo cáo ca làm việc -->
+            <div class="report-section ca-report">
+                <h2>Báo Cáo Thống Kê Ca Làm Việc</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Mã ca</th>
+                            <th>Thời gian bắt đầu</th>
+                            <th>Thời gian kết thúc</th>
+                            <th>Trạng thái</th>
+                            <th>Nhân viên mở ca</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Đoạn này sau này dùng vòng lặp PHP để đổ dữ liệu từ MySQL lên -->
+                        <tr>
+                            <td>C001</td>
+                            <td>26/10/2026 08:00:00</td>
+                            <td>26/10/2026 16:00:00</td>
+                            <td>Đã kết thúc</td>
+                            <td>NV001</td>
+                            <td>
+                                <a href="Form_BaoCaoCa.html">Xem</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+</body>
+</html>
