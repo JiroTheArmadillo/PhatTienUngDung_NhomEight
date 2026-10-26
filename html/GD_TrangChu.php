@@ -43,7 +43,7 @@ try {
 $menuTrangChu = array(
     array('ten' => 'Quản lý Bán Hàng', 'file' => 'GD_QuanLyBanHang.html', 'chiChu' => false),
     array('ten' => 'Quản lý nhân viên', 'file' => 'GD_QuanLyNhanVien.php', 'chiChu' => true),
-    array('ten' => 'Lập phiếu đặt hàng', 'file' => 'GD_LapPhieuDatHang.html', 'chiChu' => false),
+    array('ten' => 'Lập phiếu đặt hàng', 'file' => 'GD_LapPhieuDatHang.php', 'chiChu' => false),
     array('ten' => 'Duyệt phiếu đặt hàng', 'file' => 'GD_DuyetPhieuDatHang.html', 'chiChu' => false),
     array('ten' => 'Xử lý hoàn trả', 'file' => 'GD_XuLyHoanTra.html', 'chiChu' => false)
 );

@@ -3,12 +3,35 @@
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
-// 1. Nhúng db.php và Control
+// 1. Nhúng class Xác thực của Thái, db.php và Control
+require_once dirname(__FILE__) . '/../php/XacThuc.php';
 require_once dirname(__FILE__) . '/db.php';
 require_once dirname(__FILE__) . '/../php/Control/LapPhieuDatHangControl.php';
 
 if (!isset($conn)) {
     die("Lỗi: Không tìm thấy kết nối CSDL trong db.php!");
+}
+
+// Kích hoạt session và kiểm tra xác thực từ nhánh Thai
+XacThuc::batDau();
+$nguoiDung = XacThuc::layNguoiDung();
+
+// Nếu chưa đăng nhập -> chuyển hướng về trang Đăng nhập
+if ($nguoiDung === null) {
+    header("Location: GD_DangNhap.php");
+    exit();
+}
+
+// Lấy Mã và Tên nhân viên động từ Session đăng nhập
+$ma_nhan_vien = 2; // Mặc định fallback
+$ten_nhan_vien = 'Nhân viên';
+
+if (is_array($nguoiDung)) {
+    $ma_nhan_vien = isset($nguoiDung['ma_nhan_vien']) ? $nguoiDung['ma_nhan_vien'] : (isset($nguoiDung['ma_nv']) ? $nguoiDung['ma_nv'] : 2);
+    $ten_nhan_vien = isset($nguoiDung['ho_ten']) ? $nguoiDung['ho_ten'] : (isset($nguoiDung['ten_nv']) ? $nguoiDung['ten_nv'] : (isset($nguoiDung['ten_dang_nhap']) ? $nguoiDung['ten_dang_nhap'] : 'Nhân viên'));
+} else if (is_object($nguoiDung)) {
+    $ma_nhan_vien = isset($nguoiDung->ma_nhan_vien) ? $nguoiDung->ma_nhan_vien : (isset($nguoiDung->ma_nv) ? $nguoiDung->ma_nv : 2);
+    $ten_nhan_vien = isset($nguoiDung->ho_ten) ? $nguoiDung->ho_ten : (isset($nguoiDung->ten_nv) ? $nguoiDung->ten_nv : (isset($nguoiDung->ten_dang_nhap) ? $nguoiDung->ten_dang_nhap : 'Nhân viên'));
 }
 
 $control = new LapPhieuDatHangControl($conn);
@@ -24,9 +47,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action_lap_phieu'])) 
     $ds_so_luong      = isset($_POST['so_luong_dat']) ? $_POST['so_luong_dat'] : array();
     $ds_don_gia      = isset($_POST['don_gia_nhap']) ? $_POST['don_gia_nhap'] : array();
 
-    $ma_nhan_vien = 2; // Giả lập Mã NV test
-
-    // Gọi Control xử lý
+    // Gọi Control xử lý với mã nhân viên từ Session
     $res = $control->xuLyLapPhieu($ma_nhan_vien, $ds_sp_duoc_chon, $ds_ncc, $ds_so_luong, $ds_don_gia);
 
     if ($res) {
@@ -105,7 +126,9 @@ $result_sp = $control->layDanhSachSanPhamCanNhap();
 
     <div class="main-content">
         <div class="header">
-            <div class="user-info">Chào mừng, <b>Vinh</b></div>
+            <div class="user-info">
+                Nhân viên thao tác: <b><?php echo htmlspecialchars($ten_nhan_vien); ?></b> (Mã NV: <b><?php echo htmlspecialchars($ma_nhan_vien); ?></b>)
+            </div>
         </div>
 
         <div class="content">
