@@ -1,0 +1,117 @@
+:root {
+    --xanh-nhat: #2c3e50;
+    --xanh-dam: #1a252f;
+    --xanh-hoat-dong: #34495e;
+    --nen: #f3f6f9;
+    --vien: #e3e8ee;
+    --chu: #2f3b47;
+    --muted: #7f8c8d;
+    --xanh: #3498db;
+    --xanh-la: #27ae60;
+}
+
+* { margin : 0; padding: 0; }
+html, body { width:100wh; height:100vh; }
+body {
+    margin: 0;
+    display: flex;
+    min-height: 100vh;
+    font-family: Arial, Helvetica, sans-serif;
+    color: var(--chu);
+    background: var(--nen);
+}
+
+.sidebar {
+    width: 260px;
+    min-height: 100vh;
+    background: var(--xanh-nhat);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+}
+.sidebar .logo {
+    min-height: 64px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--xanh-dam);
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.sidebar .side-disabled { opacity: .65; }
+/* 
+.sidebar > form.logout button,
+.sidebar form[method="post"] button,
+.sidebar a[href="logout.php"] {
+    width: 100%;
+    min-height: 48px;
+    padding: 15px 20px;
+    border: 0;
+    background: transparent;
+    color: #ffb4a8;
+    text-align: left;
+    font: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+} */
+ 
+.main-content,
+.main {
+    min-width: 0;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+}
+.main { padding: 0 25px 25px; }
+.header {
+    min-height: 64px;
+    padding: 0 30px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+.header .user-info { font-size: 14px; }
+.content { padding: 25px 30px 35px; }
+.content h2,
+.main h2 {
+    margin: 0 0 20px;
+    color: var(--xanh-nhat);
+    font-size: 22px;
+    text-align: center;
+}
+
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fff;
+}
+th, td {
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--vien);
+    text-align: left;
+    font-size: 14px;
+}
+
+/* 
+@media (max-width: 900px) {
+    body { display: block; }
+    .sidebar { width: 100%; min-height: auto; flex-basis: auto; }
+    .sidebar .logo { justify-content: flex-start; }
+    .sidebar a, .sidebar .side-disabled { padding: 11px 18px; }
+    .sidebar > form.logout,
+    .sidebar form[method="post"] { margin-top: 0; }
+    .main-content, .main { width: 100%; }
+    .header { min-height: 58px; padding: 0 18px; justify-content: flex-start; }
+    .content { padding: 20px 18px; }
+}
+
+@media (max-width: 600px) {
+    .sidebar { position: relative; }
+    th, td { padding: 9px 8px; font-size: 13px; }
+    table { display: block; overflow-x: auto; white-space: nowrap; }
+} */

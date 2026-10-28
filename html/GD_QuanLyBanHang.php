@@ -56,16 +56,20 @@ if (!$resultSanPham) {
         .qr { max-width: 220px; margin: 12px 0; }
         .thongtin { padding: 10px; background: #f2f4f5; border-radius: 5px; text-align: left; line-height: 1.7; }
     </style>
+    <link rel="stylesheet" href="giao-dien.css">
 </head>
 <body>
     <div class="sidebar">
         <div class="logo">EIGHT STORE</div>
-        <a href="GD_TrangChu.php">Dashboard</a>
-        <a href="GD_QuanLyBanHang.php" class="active">Quản lý bán hàng</a>
-        <a href="GD_QuanLyNhanVien.php">Quản lý nhân viên</a>
+      <a href="GD_TrangChu.php">dashboard</a>
+         <a href="GD_QuanLyBanHang.php">Quản lý Bán Hàng</a>
+        <a href="GD_QuanLyNhanVien.php" class="active" aria-current="page">Quản lý nhân viên</a>
+        <a href="GD_QuanLyNhaCungCap.php">Quản lý nhà cung cấp</a>
         <a href="GD_LapPhieuDatHang.php">Lập phiếu đặt hàng</a>
-        <a href="GD_XuLyHoanTra.php">Xử lý hoàn trả</a>
-        <a href="logout.php" style="margin-top:auto;color:#e74c3c">Đăng xuất</a>
+        <a href="GD_DuyetPhieuDatHang.php">Duyệt phiếu đặt hàng</a>
+        <a href="GD_XuLyHoanTra.php">Xử lý hoàn trả</a>       
+        <a href="GD_BaoCao.php" class="active" aria-current="page">Báo cáo</a>
+        <a href="logout.php" style="margin-top: auto; color: #e74c3c;">Đăng xuất</a>
     </div>
 
     <div class="main">

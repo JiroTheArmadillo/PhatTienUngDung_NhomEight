@@ -227,18 +227,21 @@ function hienTrangThai($tt)
 .empty { text-align: center; color: #888; padding: 25px; }
 
      </style>
-    </style>
+    <link rel="stylesheet" href="giao-dien.css">
 </head>
 <body>
 
     <!-- Sidebar -->
     <div class="sidebar">
-         <a href="GD_TrangChu.html" class="active">dashboard</a>
-         <a href="GD_QuanLyBanHang.php" class="active">Quản lý Bán Hàng</a>
-        <a href="GD_QuanLyNhanVien.html" class="active">Quản lý nhân viên</a>
-        <a href="GD_LapPhieuDatHang.html">Lập phiếu đặt hàng</a>
-        <a href="GD_DuyetPhieuDatHang.html">Duyệt phiếu đặt hàng</a>
-        <a href="GD_XuLyHoanTra.php" class="active">Xử lý hoàn trả</a>
+         <div class="logo">EIGHT STORE</div>
+         <a href="GD_TrangChu.php">dashboard</a>
+         <a href="GD_QuanLyBanHang.php">Quản lý Bán Hàng</a>
+        <a href="GD_QuanLyNhanVien.php" class="active" aria-current="page">Quản lý nhân viên</a>
+        <a href="GD_QuanLyNhaCungCap.php">Quản lý nhà cung cấp</a>
+        <a href="GD_LapPhieuDatHang.php">Lập phiếu đặt hàng</a>
+        <a href="GD_DuyetPhieuDatHang.php">Duyệt phiếu đặt hàng</a>
+        <a href="GD_XuLyHoanTra.php">Xử lý hoàn trả</a>       
+        <a href="GD_BaoCao.php" class="active" aria-current="page">Báo cáo</a>
         <a href="logout.php" style="margin-top: auto; color: #e74c3c;">Đăng xuất</a>
     </div>
 
