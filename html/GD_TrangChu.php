@@ -137,14 +137,14 @@ $menuTrangChu = array(
             <h2>Tổng Quan Hệ Thống</h2>
 
             <div class="info-card">
-                <b>ðŸª Giới thiệu cửa hàng:</b>
+                <b>Giới thiệu cửa hàng:</b>
                 Chào mừng bạn đến với hệ thống quản lý chuỗi Cửa hàng Tiện lợi <b>EIGHT Store</b>.
                 Hệ thống hỗ trợ tối ưu hóa quy trình bán hàng, kiểm soát kho hàng, quản lý nhân sự
                 và theo dõi doanh thu một cách nhanh chóng, minh bạch.
             </div>
 
             <div class="info-card">
-                <b>ðŸ‘¤ Thông tin tài khoản hiện tại:</b>
+                <b>Thông tin tài khoản hiện tại:</b>
                 <span>Tên tài khoản: <b><?php echo hTrangChu($tenTaiKhoan); ?></b></span>
                 <span class="divider">|</span>
                 <span>Họ và tên: <b><?php echo hTrangChu($tenNguoiDung); ?></b></span>
