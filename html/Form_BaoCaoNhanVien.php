@@ -1,5 +1,7 @@
 <?php
+require_once dirname(__FILE__) . '/../php/XacThuc.php';
 require_once dirname(__FILE__) . '/../php/control_baocao/BaoCao.php';
+XacThuc::yeuCauDangNhap();
 function h($value) { return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8'); }
 function money($value) { return number_format((float)$value, 0, ',', '.') . ' đ'; }
 function fmtDate($value) { return $value ? date('d/m/Y H:i:s', strtotime($value)) : 'Chưa kết thúc'; }
@@ -167,19 +169,27 @@ try {
 
         
     </style>
+    <link rel="stylesheet" href="giao-dien.css">
 </head>
 <body>
 
     <!-- Sidebar -->
     <div class="sidebar">
-        <div class="logo">EIGHT</div>
-        <a href="GD_TrangChu.html">Dashboard</a>
-        <a href="GD_QuanLyBanHang.php">Quản lý Bán Hàng</a>
-        <a href="GD_QuanLyNhanVien.html">Quản lý nhân viên</a>
-        <a href="GD_LapPhieuDatHat.html">Lập phiếu đặt hàng</a>
-        <a href="GD_DuyetPhieuDatHat.html">Duyệt phiếu đặt hàng</a>
-        <a href="GD_XuLyHoanTra.php">Xử lý hoàn trả</a>
-        <a href="logout.php" style="margin-top: auto; color: #e74c3c;">Đăng xuất</a>
+        <div class="logo">EIGHT STORE</div>
+        <a href="GD_TrangChu.php">dashboard</a>
+         <a href="GD_QuanLyBanHang.php">Quản lý Bán Hàng</a>
+        <a href="GD_QuanLyNhanVien.php" class="active" aria-current="page">Quản lý nhân viên</a>
+        <a href="GD_QuanLyNhaCungCap.php">Quản lý nhà cung cấp</a>
+        <a href="GD_LapPhieuDatHang.php">Lập phiếu đặt hàng</a>
+        <a href="GD_DuyetPhieuDatHang.php">Duyệt phiếu đặt hàng</a>
+        <a href="GD_XuLyHoanTra.php">Xử lý hoàn trả</a>       
+        <a href="GD_BaoCao.php" class="active" aria-current="page">Báo cáo</a>
+        <form method="post" action="logout.php" style="margin-top: auto; margin-bottom: 0;">
+            <input type="hidden" name="csrf_token" value="<?php echo h(XacThuc::layTokenDangXuat()); ?>">
+            <button type="submit" style="display: block; width: 100%; padding: 15px 20px;
+                border: none; background: transparent; color: #ffb4a8; text-align: left;
+                font: inherit; font-size: 14px; cursor: pointer;">Đăng xuất</button>
+        </form>
     </div>
 
     <!-- Main Content -->

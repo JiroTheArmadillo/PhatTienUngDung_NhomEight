@@ -1,6 +1,6 @@
 <?php
 /**
- * GIAO DIỆN TRANG CHỦ – thiết kế theo file GD_TrangChu.html người dùng cung cấp.
+ * GIAO DIỆN TRANG CHỦ – thiết kế theo file GD_TrangChu.php người dùng cung cấp.
  * Chỉ cập nhật giao diện trang chủ; giữ nguyên luồng đăng nhập/đăng xuất của dự án.
  * Số liệu thống kê và thông tin tài khoản lấy từ DB/session, không dùng dữ liệu mẫu cố định.
  * Tương thích PHP 5.2 trở lên.
@@ -18,7 +18,7 @@ function hTrangChu($chuoi)
     return htmlspecialchars((string) $chuoi, ENT_QUOTES, 'UTF-8');
 }
 
-// Các chỉ số ở GD_TrangChu.html ban đầu là số minh họa;
+// Các chỉ số ở GD_TrangChu.php ban đầu là số minh họa;
 // đọc số thực từ cơ sở dữ liệu eightmart để không hiển thị thống kê sai.
 $soSanPhamTrongKho = '—';
 $soHoaDonDaThanhToan = '—';
@@ -41,15 +41,16 @@ try {
 // Giữ các mục menu đúng theo giao diện HTML mẫu.
 // Chuc nang chua co file: hien thi nhan nhung khong dan den trang 404.
 $menuTrangChu = array(
-    array('ten' => 'Quản lý Bán Hàng', 'file' => 'GD_QuanLyBanHang.php', 'chiChu' => false),
+    array('ten' => 'Quản lý Bán Hàng', 'file' => 'GD_QuanLyBanHang.php', 'chiChu' => true),
     array('ten' => 'Quản lý nhân viên', 'file' => 'GD_QuanLyNhanVien.php', 'chiChu' => true),
 
-    array('ten' => 'Lập phiếu đặt hàng', 'file' => 'GD_LapPhieuDatHang.php', 'chiChu' => false),
+    array('ten' => 'Lập phiếu đặt hàng', 'file' => 'GD_LapPhieuDatHang.php', 'chiChu' => true),
 
     array('ten' => 'Quản lý nhà cung cấp', 'file' => 'GD_QuanLyNhaCungCap.php', 'chiChu' => true),
 
-    array('ten' => 'Duyệt phiếu đặt hàng', 'file' => 'GD_DuyetPhieuDatHang.html', 'chiChu' => false),
-    array('ten' => 'Xử lý hoàn trả', 'file' => 'GD_XuLyHoanTra.html', 'chiChu' => false)
+    array('ten' => 'Duyệt phiếu đặt hàng', 'file' => 'GD_DuyetPhieuDatHang.php', 'chiChu' => true),
+    array('ten' => 'Xử lý hoàn trả', 'file' => 'GD_XuLyHoanTra.php', 'chiChu' => true),
+    array('ten' => 'Xem báo cáo', 'file' => 'GD_BaoCao.php', 'chiChu' => true)
 );
 ?>
 <!DOCTYPE html>
@@ -59,7 +60,7 @@ $menuTrangChu = array(
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Trang Chủ - Hệ Thống Quản Lý Cửa Hàng</title>
     <style>
-        /* Giao dien trang chu theo mau GD_TrangChu.html nguoi dung cung cap. */
+        /* Giao dien trang chu theo mau GD_TrangChu.php nguoi dung cung cap. */
         * { margin: 0; padding: 0; }
         body { display: flex; min-height: 100vh; color: #333; }
         .sidebar { width: 30%; background-color: #2c3e50; color: white;
@@ -109,6 +110,7 @@ $menuTrangChu = array(
             .stat-box { margin-bottom: 8px; }
         }
     </style>
+    <link rel="stylesheet" href="giao-dien.css">
 </head>
 <body>
     <!-- Trang chu hien thi ngay sau khi dang nhap; vao nhan vien qua menu ben trai. -->

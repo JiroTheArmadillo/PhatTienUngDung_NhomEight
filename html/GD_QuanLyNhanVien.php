@@ -170,7 +170,8 @@ function h($v) { return htmlspecialchars($v, ENT_QUOTES, 'UTF-8'); }
     .form-group input.has-error:focus, .form-group select.has-error:focus { outline-color: #e74c3c; }
 
      </style>
-    </head>
+        <link rel="stylesheet" href="giao-dien.css">
+</head>
     <body>
 
         <!-- Sidebar Menu -->
@@ -181,9 +182,10 @@ function h($v) { return htmlspecialchars($v, ENT_QUOTES, 'UTF-8'); }
          <a href="GD_QuanLyBanHang.php">Quản lý Bán Hàng</a>
         <a href="GD_QuanLyNhanVien.php" class="active" aria-current="page">Quản lý nhân viên</a>
         <a href="GD_QuanLyNhaCungCap.php">Quản lý nhà cung cấp</a>
-        <a href="GD_LapPhieuDatHang.html">Lập phiếu đặt hàng</a>
-        <a href="GD_DuyetPhieuDatHang.html">Duyệt phiếu đặt hàng</a>
-        <a href="GD_XuLyHoanTra.html">Xử lý hoàn trả</a>
+        <a href="GD_LapPhieuDatHang.php">Lập phiếu đặt hàng</a>
+        <a href="GD_DuyetPhieuDatHang.php">Duyệt phiếu đặt hàng</a>
+        <a href="GD_XuLyHoanTra.php">Xử lý hoàn trả</a>       
+        <a href="GD_BaoCao.php" class="active" aria-current="page">Báo cáo</a>
         <!-- UC02: nút Đăng xuất gửi POST, kết thúc phiên và quay về đăng nhập. -->
         <form method="post" action="logout.php" style="margin-top: auto; margin-bottom: 0;">
             <input type="hidden" name="csrf_token" value="<?php echo h(XacThuc::layTokenDangXuat()); ?>">

@@ -110,17 +110,20 @@ $result_sp = $control->layDanhSachSanPhamCanNhap();
         .alert-danger { background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #f5c6cb; }
         .phieu-card { background: #fff; border: 2px solid #2ecc71; border-radius: 6px; padding: 20px; margin-bottom: 20px; }
     </style>
+    <link rel="stylesheet" href="giao-dien.css">
 </head>
 <body>
 
     <div class="sidebar">
         <div class="logo">EIGHT STORE</div>
-        <a href="GD_TrangChu.html" class="active">dashboard</a>
-        <a href="GD_QuanLyBanHang.php" class="active">Quản lý Bán Hàng</a>
-        <a href="GD_QuanLyNhanVien.html" class="active">Quản lý nhân viên</a>
+         <a href="GD_TrangChu.php">dashboard</a>
+         <a href="GD_QuanLyBanHang.php">Quản lý Bán Hàng</a>
+        <a href="GD_QuanLyNhanVien.php" class="active" aria-current="page">Quản lý nhân viên</a>
+        <a href="GD_QuanLyNhaCungCap.php">Quản lý nhà cung cấp</a>
         <a href="GD_LapPhieuDatHang.php">Lập phiếu đặt hàng</a>
-        <a href="GD_DuyetPhieuDatHang.html">Duyệt phiếu đặt hàng</a>
-        <a href="GD_XuLyHoanTra.html">Xử lý hoàn trả</a>
+        <a href="GD_DuyetPhieuDatHang.php">Duyệt phiếu đặt hàng</a>
+        <a href="GD_XuLyHoanTra.php">Xử lý hoàn trả</a>       
+        <a href="GD_BaoCao.php" class="active" aria-current="page">Báo cáo</a>
         <a href="logout.php" style="margin-top: auto; color: #e74c3c;">Đăng xuất</a>
     </div>
 

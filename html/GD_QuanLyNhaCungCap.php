@@ -52,18 +52,22 @@ function trangThaiNcc($status) { return $status === 'HoatDong' ? 'Hoạt động
         .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
         @media (max-width: 840px) { body { display: block; } .sidebar { width: 100%; } .main-content { width: 100%; } .table-wrap { overflow-x: auto; } table { min-width: 850px; } }
     </style>
+    <link rel="stylesheet" href="giao-dien.css">
 </head>
 <body>
 <div class="sidebar">
     <div class="logo">EIGHT STORE</div>
-    <a href="GD_TrangChu.php">dashboard</a>
-    <a href="GD_QuanLyBanHang.php">Quản lý Bán Hàng</a>
-    <a href="GD_QuanLyNhanVien.php">Quản lý nhân viên</a>
-    <a href="GD_QuanLyNhaCungCap.php" class="active" aria-current="page">Quản lý nhà cung cấp</a>
-    <a href="GD_LapPhieuDatHang.html">Lập phiếu đặt hàng</a>
-    <a href="GD_DuyetPhieuDatHang.html">Duyệt phiếu đặt hàng</a>
-    <a href="GD_XuLyHoanTra.html">Xử lý hoàn trả</a>
-    <form method="post" action="logout.php">
+    
+         <a href="GD_TrangChu.php">dashboard</a>
+         <a href="GD_QuanLyBanHang.php">Quản lý Bán Hàng</a>
+        <a href="GD_QuanLyNhanVien.php" class="active" aria-current="page">Quản lý nhân viên</a>
+        <a href="GD_QuanLyNhaCungCap.php">Quản lý nhà cung cấp</a>
+        <a href="GD_LapPhieuDatHang.php">Lập phiếu đặt hàng</a>
+        <a href="GD_DuyetPhieuDatHang.php">Duyệt phiếu đặt hàng</a>
+        <a href="GD_XuLyHoanTra.php">Xử lý hoàn trả</a>       
+        <a href="GD_BaoCao.php" class="active" aria-current="page">Báo cáo</a>
+        <a href="logout.php" style="margin-top: auto; color: #e74c3c;">Đăng xuất</a>
+        <form method="post" action="logout.php">
         <input type="hidden" name="csrf_token" value="<?php echo h(XacThuc::layTokenDangXuat()); ?>">
         <button type="submit" style="width:100%;padding:15px 20px;border:0;background:transparent;color:#ffb4a8;text-align:left;font:inherit;cursor:pointer">Đăng xuất</button>
     </form>
