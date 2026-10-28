@@ -1,0 +1,435 @@
+<!-- Tong tien va nut thanh toan -->
+            <div class="total-section">
+                <span>Tổng cộng: <span id="lblTongTien" style="color: #e74c3c;">0 đ</span></span>
+                <button type="button" class="btn btn-success" style="padding: 12px 25px; font-size: 15px;" onclick="moModalThanhToan()">Thanh toán hóa đơn</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal thanh toan -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+
+            <!-- Buoc 1: chon phuong thuc -->
+            <div id="buocChon" class="buoc">
+                <h3>Chọn Phương Thức Thanh Toán</h3>
+                <p>Tổng tiền: <span class="tong-modal lblTongModal"></span></p>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <button class="btn btn-primary" style="padding: 12px;" onclick="chonPhuongThuc('TienMat')">Tiền Mặt</button>
+                    <button class="btn btn-success" style="padding: 12px;" id="btnChuyenKhoan" onclick="chonPhuongThuc('ChuyenKhoan')">Chuyển Khoản Ngân Hàng</button>
+                </div>
+                <div class="thong-bao-loi" id="loiChon"></div>
+                <div class="modal-buttons">
+                    <button class="btn btn-secondary" onclick="dongModalThanhToan()">Hủy bỏ</button>
+                </div>
+            </div>
+
+            <!-- Buoc 2a: tien mat -->
+            <div id="buocTienMat" class="buoc">
+                <h3>Thanh Toán Tiền Mặt</h3>
+                <p>Tổng tiền: <span class="tong-modal lblTongModal"></span></p>
+                <label for="txtTienKhachDua">Tiền khách đưa:</label>
+                <input type="text" id="txtTienKhachDua" inputmode="numeric" placeholder="Ví dụ: 50.000" oninput="dinhDangOTien(this); tinhTienThua()">
+                <p style="margin-top: 12px;">Tiền thừa trả khách: <b id="lblTienThua">0 đ</b></p>
+                <div class="thong-bao-loi" id="loiTienMat"></div>
+                <div class="modal-buttons">
+                    <button class="btn btn-secondary" onclick="hienBuoc('buocChon')">Quay lại</button>
+                    <button class="btn btn-success" id="btnXacNhanTienMat" onclick="guiThanhToan('TienMat')">Xác nhận thanh toán</button>
+                </div>
+            </div>
+
+            <!-- Buoc 3: cho xac nhan chuyen khoan -->
+            <div id="buocChoXacNhan" class="buoc">
+                <h3>Chờ Khách Chuyển Khoản</h3>
+                <p class="dem-nguoc">Mã QR hết hạn sau <b id="lblDemNguoc">05:00</b></p>
+                <img id="imgQR" class="qr-ck" alt="Mã QR chuyển khoản"
+                     onerror="this.style.display='none'; document.getElementById('loiQR').style.display='block';">
+                <p id="loiQR" style="display: none; color: #e74c3c;">Không tải được mã QR (máy cần có mạng Internet). Khách có thể chuyển khoản thủ công theo thông tin bên dưới.</p>
+                <div class="hop-ck">
+                    Ngân hàng: <b id="lblNganHang"></b><br>
+                    Số tài khoản: <b id="lblSoTaiKhoan"></b><br>
+                    Chủ tài khoản: <b id="lblChuTaiKhoan"></b><br>
+                    Số tiền: <b class="lblTongModal"></b><br>
+                    Nội dung chuyển khoản: <b id="lblNoiDungCK"></b>
+                </div>
+                <div class="thong-bao-loi" id="loiXacNhan"></div>
+                <div class="modal-buttons">
+                    <button class="btn btn-danger" onclick="huyChuyenKhoan()">Hủy đơn</button>
+                    <button class="btn btn-success" onclick="xacNhanChuyenKhoan()">Đã nhận tiền</button>
+                </div>
+            </div>
+
+            <!-- Buoc 3b: QR het han -->
+            <div id="buocHetHan" class="buoc">
+                <h3>Mã QR Đã Hết Hạn</h3>
+                <p id="lblHetHan">Hóa đơn đã tự động hủy. Giỏ hàng vẫn giữ nguyên.</p>
+                <div class="modal-buttons">
+                    <button class="btn btn-secondary" onclick="dongModalThanhToan()">Đóng</button>
+                    <button class="btn btn-success" onclick="taoLaiQR()">Tạo mã QR mới</button>
+                </div>
+            </div>
+
+            <!-- Buoc 4: xong -->
+            <div id="buocXong" class="buoc">
+                <h3 id="lblKetQua">Thanh toán thành công</h3>
+                <p id="lblChiTietKetQua"></p>
+                <div class="modal-buttons">
+                    <a class="btn btn-primary" id="lnkInHoaDon" href="#" target="_blank">In hóa đơn</a>
+                    <button class="btn btn-success" onclick="hoaDonMoi()">Hóa đơn mới</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+    // Duong dan tu thu muc html/ sang php/ThanhToan/
+    var URL_XU_LY = '../php/ThanhToan/xulythanhtoan.php';
+
+    // ===== THONG TIN TAI KHOAN NHAN TIEN - SUA LAI CHO DUNG =====
+    // MA_NGAN_HANG: viet tat cua ngan hang, vi du: MB, VCB (Vietcombank), TCB (Techcombank),
+    //               ACB, BIDV, ICB (VietinBank), VBA (Agribank), TPB (TPBank), VPB (VPBank)
+    var MA_NGAN_HANG = 'MB';
+    var SO_TAI_KHOAN = '0123456789';
+    var CHU_TAI_KHOAN = 'EIGHT STORE';
+
+    // Tao ma QR VietQR (quet duoc bang moi app ngan hang), tu dien so tien va noi dung
+    function hienMaQR(soTien, noiDung) {
+        var url = 'https://img.vietqr.io/image/' + MA_NGAN_HANG + '-' + SO_TAI_KHOAN + '-compact.png' +
+            '?amount=' + Math.round(soTien) +
+            '&addInfo=' + encodeURIComponent(noiDung) +
+            '&accountName=' + encodeURIComponent(CHU_TAI_KHOAN);
+        var img = document.getElementById('imgQR');
+        img.style.display = 'block';
+        document.getElementById('loiQR').style.display = 'none';
+        img.src = url;
+        document.getElementById('lblNganHang').innerText = MA_NGAN_HANG;
+        document.getElementById('lblSoTaiKhoan').innerText = SO_TAI_KHOAN;
+        document.getElementById('lblChuTaiKhoan').innerText = CHU_TAI_KHOAN;
+    }
+    var gioHang = [];          // moi phan tu: {ma, maHienThi, ten, gia, ton, soLuong}
+    var maThanhToanDangCho = 0;
+
+    // Doc ket qua server; neu khong phai JSON thi bao ro ly do (sai thu muc, loi PHP...)
+    function docJson(res) {
+        return res.text().then(function (text) {
+            try {
+                return JSON.parse(text);
+            } catch (e) {
+                var lyDo = res.status === 404
+                    ? 'Không tìm thấy file ' + URL_XU_LY + ' (404). Kiểm tra file xulythanhtoan.php đã nằm trong php/ThanhToan chưa.'
+                    : 'Server trả về lỗi: ' + text.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').substring(0, 300);
+                throw new Error(lyDo);
+            }
+        });
+    }
+
+    function dinhDangTien(so) {
+        return Number(so).toLocaleString('vi-VN') + ' đ';
+    }
+
+    function tongTien() {
+        var tong = 0;
+        for (var i = 0; i < gioHang.length; i++) {
+            tong += gioHang[i].gia * gioHang[i].soLuong;
+        }
+        return tong;
+    }
+
+    // Ve lai bang san pham va tong tien
+    function veBang() {
+        var tbody = document.getElementById('tblDanhSachSP');
+        if (gioHang.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="trong">Chưa có sản phẩm nào</td></tr>';
+        } else {
+            var html = '';
+            for (var i = 0; i < gioHang.length; i++) {
+                var sp = gioHang[i];
+                html += '<tr>' +
+                    '<td>' + sp.maHienThi + '</td>' +
+                    '<td>' + thoatHtml(sp.ten) + '</td>' +
+                    '<td>' + dinhDangTien(sp.gia) + '</td>' +
+                    '<td><input class="sl" type="number" min="1" max="' + sp.ton + '" value="' + sp.soLuong + '" onchange="doiSoLuong(' + i + ', this.value)"></td>' +
+                    '<td>' + dinhDangTien(sp.gia * sp.soLuong) + '</td>' +
+                    '<td><button class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;" onclick="xoaDong(' + i + ')">Xóa</button></td>' +
+                    '</tr>';
+            }
+            tbody.innerHTML = html;
+        }
+        document.getElementById('lblTongTien').innerText = dinhDangTien(tongTien());
+    }
+
+    function thoatHtml(chuoi) {
+        var div = document.createElement('div');
+        div.innerText = chuoi;
+        return div.innerHTML;
+    }
+
+    // Tim san pham tren server roi them vao gio
+    function themSanPham() {
+        var o = document.getElementById('txtMaSP');
+        var ma = o.value.trim();
+        var soLuong = parseInt(document.getElementById('txtSoLuong').value, 10) || 1;
+        if (ma === '') { o.focus(); return; }
+
+        fetch(URL_XU_LY + '?action=tim_sp&ma=' + encodeURIComponent(ma))
+            .then(docJson)
+            .then(function (kq) {
+                if (!kq.ok) { alert(kq.loi); return; }
+                var daCo = null;
+                for (var i = 0; i < gioHang.length; i++) {
+                    if (gioHang[i].ma === kq.ma_san_pham) { daCo = gioHang[i]; }
+                }
+                var tongSL = soLuong + (daCo ? daCo.soLuong : 0);
+                if (tongSL > kq.ton) {
+                    alert(kq.ten + ' chỉ còn ' + kq.ton + ' trong kho');
+                    return;
+                }
+                if (daCo) {
+                    daCo.soLuong = tongSL;
+                } else {
+                    gioHang.push({ ma: kq.ma_san_pham, maHienThi: kq.ma_hien_thi, ten: kq.ten, gia: kq.gia, ton: kq.ton, soLuong: soLuong });
+                }
+                o.value = '';
+                document.getElementById('txtSoLuong').value = 1;
+                o.focus();
+                veBang();
+            })
+            .catch(function (err) { alert(err.message || 'Không gọi được server. Kiểm tra WAMP đã bật chưa.'); });
+    }
+
+    function doiSoLuong(i, giaTri) {
+        var sl = parseInt(giaTri, 10);
+        if (!sl || sl < 1) { sl = 1; }
+        if (sl > gioHang[i].ton) {
+            alert(gioHang[i].ten + ' chỉ còn ' + gioHang[i].ton + ' trong kho');
+            sl = gioHang[i].ton;
+        }
+        gioHang[i].soLuong = sl;
+        veBang();
+    }
+
+    function xoaDong(i) {
+        gioHang.splice(i, 1);
+        veBang();
+    }
+
+    // ----- Modal -----
+
+    function hienBuoc(id) {
+        var cacBuoc = document.querySelectorAll('.buoc');
+        for (var i = 0; i < cacBuoc.length; i++) { cacBuoc[i].style.display = 'none'; }
+        document.getElementById(id).style.display = 'block';
+        var tong = document.querySelectorAll('.lblTongModal');
+        for (var j = 0; j < tong.length; j++) { tong[j].innerText = dinhDangTien(tongTien()); }
+    }
+
+    function moModalThanhToan() {
+        if (gioHang.length === 0) { alert('Hóa đơn chưa có sản phẩm'); return; }
+        document.getElementById('loiChon').innerText = '';
+        document.getElementById('paymentModal').style.display = 'flex';
+        hienBuoc('buocChon');
+    }
+
+    function dongModalThanhToan() {
+        document.getElementById('paymentModal').style.display = 'none';
+    }
+
+    function chonPhuongThuc(phuongThuc) {
+        if (phuongThuc === 'TienMat') {
+            document.getElementById('txtTienKhachDua').value = '';
+            document.getElementById('lblTienThua').innerText = '0 đ';
+            document.getElementById('loiTienMat').innerText = '';
+            hienBuoc('buocTienMat');
+            document.getElementById('txtTienKhachDua').focus();
+        } else {
+            // Chon chuyen khoan la tao hoa don va hien ma QR luon
+            guiThanhToan('ChuyenKhoan');
+        }
+    }
+
+    // "50.000" hoac "50,000" hoac "50000" -> 50000 (tien Viet khong co so le)
+    function docSoTien(chuoi) {
+        return parseInt(String(chuoi).replace(/[^0-9]/g, ''), 10) || 0;
+    }
+
+    // Tu them dau cham khi go: 50000 -> 50.000
+    function dinhDangOTien(o) {
+        var so = docSoTien(o.value);
+        o.value = so ? so.toLocaleString('vi-VN') : '';
+    }
+
+    function tinhTienThua() {
+        var dua = docSoTien(document.getElementById('txtTienKhachDua').value);
+        var thua = dua - tongTien();
+        document.getElementById('lblTienThua').innerText = thua >= 0 ? dinhDangTien(thua) : 'Chưa đủ tiền';
+    }
+
+    // Gui POST dang form (de PHP doc bang $_POST)
+    function guiPost(duLieu) {
+        return fetch(URL_XU_LY, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: duLieu.toString()
+        }).then(docJson);
+    }
+
+    function guiThanhToan(phuongThuc) {
+        var oLoi = document.getElementById(phuongThuc === 'TienMat' ? 'loiTienMat' : 'loiChon');
+        var nut = document.getElementById(phuongThuc === 'TienMat' ? 'btnXacNhanTienMat' : 'btnChuyenKhoan');
+        if (phuongThuc === 'ChuyenKhoan') { nut.innerText = 'Đang tạo mã QR...'; }
+        oLoi.innerText = '';
+
+        var duLieu = new URLSearchParams();
+        duLieu.append('action', 'thanh_toan');
+        duLieu.append('phuong_thuc', phuongThuc);
+        if (phuongThuc === 'TienMat') {
+            var dua = docSoTien(document.getElementById('txtTienKhachDua').value);
+            if (dua < tongTien()) { oLoi.innerText = 'Tiền khách đưa chưa đủ'; return; }
+            duLieu.append('tien_khach_dua', dua);
+        }
+        for (var i = 0; i < gioHang.length; i++) {
+            duLieu.append('ma_sp[]', gioHang[i].ma);
+            duLieu.append('so_luong[]', gioHang[i].soLuong);
+        }
+
+        nut.disabled = true; // chong bam 2 lan tao 2 hoa don
+        guiPost(duLieu)
+            .then(function (kq) {
+                nut.disabled = false;
+                if (phuongThuc === 'ChuyenKhoan') { nut.innerText = 'Chuyển Khoản Ngân Hàng'; }
+                if (!kq.ok) {
+                    if (phuongThuc === 'ChuyenKhoan') { hienBuoc('buocChon'); }
+                    oLoi.innerText = kq.loi;
+                    return;
+                }
+                if (kq.trang_thai === 'ThanhCong') {
+                    hienKetQua('Thanh toán thành công',
+                        'Hóa đơn HD' + kq.ma_hoa_don + ' - Mã khách hàng: KH' + kq.ma_khach_hang +
+                        ' - Tiền thừa trả khách: ' + dinhDangTien(kq.tien_thua),
+                        kq.ma_hoa_don);
+                } else {
+                    maThanhToanDangCho = kq.ma_thanh_toan;
+                    document.getElementById('lblNoiDungCK').innerText = kq.noi_dung_ck;
+                    hienMaQR(kq.tong_tien, kq.noi_dung_ck);
+                    document.getElementById('loiXacNhan').innerText = '';
+                    hienBuoc('buocChoXacNhan');
+                    batDauDemNguoc(kq.thoi_han_giay || 300);
+                }
+            })
+            .catch(function (err) {
+                nut.disabled = false;
+                if (phuongThuc === 'ChuyenKhoan') { nut.innerText = 'Chuyển Khoản Ngân Hàng'; hienBuoc('buocChon'); }
+                oLoi.innerText = err.message || 'Không gọi được server';
+            });
+    }
+
+    // ----- Dem nguoc thoi han ma QR -----
+    var boDemNguoc = null;
+
+    function dungDemNguoc() {
+        if (boDemNguoc) { clearInterval(boDemNguoc); boDemNguoc = null; }
+    }
+
+    function batDauDemNguoc(soGiay) {
+        dungDemNguoc();
+        var hetLuc = Date.now() + soGiay * 1000;
+        var capNhat = function () {
+            var conLai = Math.max(0, Math.round((hetLuc - Date.now()) / 1000));
+            var phut = Math.floor(conLai / 60);
+            var giay = conLai % 60;
+            var o = document.getElementById('lblDemNguoc');
+            o.innerText = (phut < 10 ? '0' : '') + phut + ':' + (giay < 10 ? '0' : '') + giay;
+            o.style.color = conLai <= 30 ? '#e74c3c' : '';
+            if (conLai === 0) {
+                dungDemNguoc();
+                xuLyHetHan();
+            }
+        };
+        capNhat();
+        boDemNguoc = setInterval(capNhat, 1000);
+    }
+
+    // Het gio: bao server huy don, chuyen sang man hinh het han
+    function xuLyHetHan() {
+        var duLieu = new URLSearchParams();
+        duLieu.append('action', 'huy');
+        duLieu.append('ma_thanh_toan', maThanhToanDangCho);
+        duLieu.append('ly_do', 'het_han');
+        guiPost(duLieu)
+            .then(function (kq) {
+                maThanhToanDangCho = 0;
+                document.getElementById('lblHetHan').innerText = kq.ok
+                    ? 'Hóa đơn HD' + kq.ma_hoa_don + ' đã tự động hủy. Giỏ hàng vẫn giữ nguyên.'
+                    : kq.loi;
+                hienBuoc('buocHetHan');
+            })
+            .catch(function () { hienBuoc('buocHetHan'); });
+    }
+
+    function taoLaiQR() {
+        guiThanhToan('ChuyenKhoan');
+    }
+
+    function xacNhanChuyenKhoan() {
+        var oLoi = document.getElementById('loiXacNhan');
+        var duLieu = new URLSearchParams();
+        duLieu.append('action', 'xac_nhan');
+        duLieu.append('ma_thanh_toan', maThanhToanDangCho);
+        guiPost(duLieu)
+            .then(function (kq) {
+                if (!kq.ok) {
+                    if (kq.het_han) {
+                        dungDemNguoc();
+                        maThanhToanDangCho = 0;
+                        document.getElementById('lblHetHan').innerText = kq.loi + '. Giỏ hàng vẫn giữ nguyên.';
+                        hienBuoc('buocHetHan');
+                    } else {
+                        oLoi.innerText = kq.loi;
+                    }
+                    return;
+                }
+                dungDemNguoc();
+                hienKetQua('Thanh toán thành công', 'Hóa đơn HD' + kq.ma_hoa_don + ' đã nhận chuyển khoản', kq.ma_hoa_don);
+            })
+            .catch(function (err) { oLoi.innerText = err.message || 'Không gọi được server'; });
+    }
+
+    function huyChuyenKhoan() {
+        if (!confirm('Hủy hóa đơn đang chờ chuyển khoản?')) { return; }
+        var duLieu = new URLSearchParams();
+        duLieu.append('action', 'huy');
+        duLieu.append('ma_thanh_toan', maThanhToanDangCho);
+        guiPost(duLieu)
+            .then(function (kq) {
+                if (!kq.ok) { document.getElementById('loiXacNhan').innerText = kq.loi; return; }
+                dungDemNguoc();
+                maThanhToanDangCho = 0;
+                dongModalThanhToan();
+                alert('Đã hủy hóa đơn HD' + kq.ma_hoa_don + '. Giỏ hàng vẫn giữ nguyên để thanh toán lại.');
+            })
+            .catch(function (err) { document.getElementById('loiXacNhan').innerText = err.message || 'Không gọi được server'; });
+    }
+
+    function hienKetQua(tieuDe, chiTiet, maHoaDon) {
+        document.getElementById('lblKetQua').innerText = tieuDe;
+        document.getElementById('lblChiTietKetQua').innerText = chiTiet;
+        document.getElementById('lnkInHoaDon').href = '../php/ThanhToan/hoadon.php?id=' + maHoaDon;
+        hienBuoc('buocXong');
+    }
+
+    function hoaDonMoi() {
+        gioHang = [];
+        maThanhToanDangCho = 0;
+        veBang();
+        dongModalThanhToan();
+        document.getElementById('txtMaSP').focus();
+    }
+
+    // Nhan Enter o o ma san pham = bam "Them vao hoa don"
+    document.getElementById('txtMaSP').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { themSanPham(); }
+    });
+
+    veBang();
+    </script>

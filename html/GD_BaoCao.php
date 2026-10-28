@@ -1,3 +1,20 @@
+<?php
+require_once dirname(__FILE__) . '/../php/control_baocao/BaoCao.php';
+function h($value) { return htmlspecialchars((string)$value, ENT_QUOTES, 'UTF-8'); }
+function money($value) { return number_format((float)$value, 0, ',', '.') . ' đ'; }
+function fmtDate($value) { return $value ? date('d/m/Y H:i:s', strtotime($value)) : 'Chưa kết thúc'; }
+$error = '';
+$nhanVien = array();
+$caLamViec = array();
+try {
+    $baoCao = new BaoCao();
+    $nhanVien = $baoCao->getDanhSachNhanVien();
+    $caLamViec = $baoCao->getDanhSachCa();
+} catch (Exception $e) {
+    $error = $e->getMessage();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -75,48 +92,25 @@
             color: #2c3e50;
         }
 
-        /* Content Area */
+    
         .content {
             padding: 30px;
-            display: flex;
-            flex-direction: column;
         }
 
-       .content .target-report{
-    display: flex;
-    gap: 20px;
-}
+        .report-section {
+            background: #ffffff;
+            padding: 20px;
+           
+            margin-bottom: 20px;
+        }
 
-.content .target-report .total-invoice,
-.content .target-report .total-venue{
-    background: #fff;
-    border-radius: 12px;
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    flex: 1;
-
-    
-}
-
-
-
-/* Label */
-.total-invoice label,
-.total-venue label{
-    font-size: 14px;
-    color: #7f8c8d;
-    font-weight: 500;
-}
-
-/* Value */
-.total-invoice-value,
-.total-venue-value{
-    font-size: 32px;
-    font-weight: bold;
-    color: #2c3e50;
-}
+        .report-section h2 {
+            
+            color: #2c3e50;
+            font-size: 18px;
+            padding-bottom: 10px;
+        }
+       
         table {
             width: 100%;
             border-collapse: collapse;
@@ -136,21 +130,18 @@
             font-weight: bold;
         }
 
-       
+    
+
         td a {
             background-color: #3498db;
             color: white;
             padding: 6px 12px;
-            border-radius: 4px;
+         
             text-decoration: none;
             font-size: 12px;
         }
 
-       
-
-        
-
-        
+      
     </style>
 </head>
 <body>
@@ -168,58 +159,33 @@
     </div>
 
     <!-- Main Content -->
-    <div class="main-content">
+     <div class="main-content">
         <div class="header">
-            <div class="user-info">Chào mừng ! Vinh </div>
+            <div class="user-info">Chào mừng ! Vinh</div>
         </div>
         
         <div class="content">
-            
-            <div class="target-info">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Mã NV</th>
-                            <th>Họ và Tên</th>
-                            <th>Giới tính</th>
-                            <th>Số điện thoại</th>
-                            <th>Chức vụ</th>
-                            <th>Thao tác</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Đoạn này sau này dùng vòng lặp PHP để đổ dữ liệu từ MySQL lên -->
-                        <tr>
-                            <td>NV001</td>
-                            <td>Nguyễn Văn Vinh</td>
-                            <td>Nam</td>
-                            <td>0901234567</td>
-                            <td>Quản lý</td>
-                            <td>
-                                <a href="GD_BaoCao.html">Xong</a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <?php if ($error !== '') { ?><p style="color:#b00020;padding:12px;background:white;"><?php echo h($error); ?></p><?php } ?>
+            <div class="report-section nhanVien-report">
+                <h2>Báo Cáo Thống Kê Nhân Viên</h2>
+                <table><thead><tr><th>Mã NV</th><th>Họ và Tên</th><th>Giới tính</th><th>Số điện thoại</th><th>Chức vụ</th><th>Thao tác</th></tr></thead><tbody>
+                <?php if (isset($nhanVien)) { foreach ($nhanVien as $nv) { ?>
+                <tr><td><?php echo h($nv['ma_nv']); ?></td><td><?php echo h($nv['ho_ten']); ?></td><td><?php echo h($nv['gioi_tinh']); ?></td><td><?php echo h($nv['so_dien_thoai']); ?></td><td><?php echo h($nv['chuc_vu']); ?></td><td><a href="Form_BaoCaoNhanVien.php?ma_nv=<?php echo urlencode($nv['ma_nv']); ?>">Xem</a></td></tr>
+                <?php } if (count($nhanVien) === 0) { ?><tr><td colspan="6">Chưa có dữ liệu nhân viên.</td></tr><?php } } ?>
+                </tbody></table>
             </div>
-            <div class="target-report">
-                <div class="total-invoice">
-                    <label>Tổng số hóa đơn</label>
-                    <div class="total-invoice-value">
-                            42342342
-                    </div>
-                    
-                </div>
-                <div class="total-venue">
-                    <label>Tổng doanh thu</label>
-                    <div class="total-venue-value">
-                        424234
-                    </div>
-                </div>
+            <div class="report-section ca-report">
+                <h2>Báo Cáo Thống Kê Ca Làm Việc</h2>
+                <table><thead><tr><th>Mã ca</th><th>Thời gian bắt đầu</th><th>Thời gian kết thúc</th><th>Trạng thái</th><th>Nhân viên mở ca</th><th>Thao tác</th></tr></thead><tbody>
+                <?php if (isset($caLamViec)) { foreach ($caLamViec as $ca) { ?>
+                <tr><td><?php echo h($ca['ma_ca']); ?></td><td><?php echo h(fmtDate($ca['bat_dau'])); ?></td><td><?php echo h(fmtDate($ca['ket_thuc'])); ?></td><td><?php echo h($ca['trang_thai']); ?></td><td><?php echo h($ca['ma_nv_mo_ca']); ?></td><td><a href="Form_BaoCaoCa.php?ma_ca=<?php echo urlencode($ca['ma_ca']); ?>">Xem</a></td></tr>
+                <?php } if (count($caLamViec) === 0) { ?><tr><td colspan="6">Chưa có dữ liệu ca làm việc.</td></tr><?php } } ?>
+                </tbody></table>
             </div>
-            
-        </div> 
+        </div>
     </div>
+
+
     
 </body>
 </html>
