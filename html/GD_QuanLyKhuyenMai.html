@@ -1,0 +1,195 @@
+\<?php
+// Kết nối CSDL MySQL (nếu cần lấy dữ liệu thật)
+// include 'db.php'; 
+?>
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Hệ Thống Quản Lý Cửa Hàng</title>
+      <style>
+            
+    * {
+        
+        margin: 0;
+        padding: 0;
+        
+    }
+
+    body {
+        display: flex;
+        height: 100vh;
+        color: #333;
+    }
+
+    .sidebar {
+        width: 30%;
+        background-color: #2c3e50;
+        color: white;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sidebar .logo {
+        padding: 20px;
+        font-size: 20px;
+        font-weight: bold;
+        background-color: #1a252f;
+        text-align: center;
+        
+    }
+
+    .sidebar a {
+        padding: 15px 20px;
+        color: #bdc3c7;
+        text-decoration: none;
+        font-size: 14px;
+    }
+
+    .sidebar a:hover, 
+    .sidebar a.active {
+        background-color: #34495e;
+        color: white;
+        
+    }
+
+    .main-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+    }
+
+    /* Header nằm trên cùng */
+    .header {
+        background: white;
+        padding: 15px 30px;
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        border-bottom: 1px solid #e0e0e0;
+    }
+
+    .header .user-info {
+        font-size: 14px;
+    }
+
+    /* Content bên trong */
+    .content {
+        padding: 25px 30px;
+    }
+
+    .content h2 {
+        font-size: 22px;
+        margin-bottom: 15px;
+        color: #2c3e50;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse; /*để mỗi ô trong bảng liên kết không bị tách ra  */
+        background: white;
+        margin-top: 15px;
+        
+        
+    }
+
+    th, td {
+        padding: 12px 15px;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+        font-size: 14px;
+    }
+
+    th {
+        background-color: #f8f9fa;
+        color: #2c3e50;
+        font-weight: 600;
+    }
+
+    tr:hover {
+        background-color: #f1f5f9;
+    }
+
+
+    .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-primary { background-color: #3498db; color: white; }
+    .btn-success { background-color: #2ecc71; color: white; }
+    .btn-danger  { background-color: #e74c3c; color: white; }
+    .btn-secondary { background-color: #95a5a6; color: white; }
+
+
+
+
+
+     </style>
+</head>
+<body>
+
+    <!-- Sidebar Menu -->
+    <div class="sidebar">
+         <a href="GD_TrangChu.html" class="active">dashboard</a>
+         <a href="GD_QuanLyBanHang.html" class="active">Quản lý Bán Hàng</a>
+        <a href="GD_QuanLyNhanVien.html" class="active">Quản lý nhân viên</a>
+        <a href="GD_LapPhieuDatHang.html">Lập phiếu đặt hàng</a>
+        <a href="GD_DuyetPhieuDatHang.html">Duyệt phiếu đặt hàng</a>
+        <a href="GD_XuLyHoanTra.php">Xử lý hoàn trả</a>
+        <a href="logout.php" style="margin-top: auto; color: #e74c3c;">Đăng xuất</a>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="header">
+            <span>Chào mừng, <b>Vinh (Chủ doanh nghiệp)</b></span>
+        </div>
+
+        <div class="content">
+            <h2>Danh sách Khuyến Mãi</h2>
+            
+            <!-- Nút thêm mới -->
+            <div style="margin: 15px 0;">
+                <a href="them_nhan_vien.php" class="btn btn-primary">+ Thêm Khuyến mãi mới</a>
+            </div>
+
+            <!-- Bảng hiển thị -->
+            <table>
+                <thead>
+                    <tr>
+                        <th>Mã KM</th>
+                        <th>Tên</th>
+                        <th>Thời gian bắt đầu</th>
+                        <th>Thời gian kết thúc</th>
+                        <th>Lượt dùng</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Đoạn này sau này dùng vòng lặp PHP để đổ dữ liệu từ MySQL lên -->
+                    <tr>
+                        <td>KM001</td>
+                        <td>Giảm giá sập sàn bro</td>
+                        <td><script>document.write(new Date())</script></td>
+                        <td><script>document.write(new Date())</script></td>
+                        <td>363636363</td>
+                        <td>
+                            <a href="sua_nhan_vien.php?id=NV001" class="btn btn-primary" style="padding: 5px 10px; font-size: 12px;">Sửa</a>
+                            <a href="xoa_nhan_vien.php?id=NV001" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;" onclick="return confirm('Bạn có chắc muốn xóa?');">Xóa</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</body>
+</html>
