@@ -180,6 +180,7 @@ function h($v) { return htmlspecialchars($v, ENT_QUOTES, 'UTF-8'); }
              <a href="GD_TrangChu.php">dashboard</a>
          <a href="GD_QuanLyBanHang.html">Quản lý Bán Hàng</a>
         <a href="GD_QuanLyNhanVien.php" class="active" aria-current="page">Quản lý nhân viên</a>
+        <a href="GD_QuanLyNhaCungCap.php">Quản lý nhà cung cấp</a>
         <a href="GD_LapPhieuDatHang.html">Lập phiếu đặt hàng</a>
         <a href="GD_DuyetPhieuDatHang.html">Duyệt phiếu đặt hàng</a>
         <a href="GD_XuLyHoanTra.html">Xử lý hoàn trả</a>
