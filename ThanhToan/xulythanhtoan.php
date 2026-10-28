@@ -1,5 +1,5 @@
 <?php
-// Xu ly thanh toan cho trang html/GD_QuanLyBanHang.html
+// Xu ly thanh toan cho trang html/GD_QuanLyBanHang.php
 // Cac action:
 //   GET  ?action=tim_sp&ma=SP001        -> tra thong tin san pham
 //   POST action=thanh_toan              -> tao don hang + thanh toan

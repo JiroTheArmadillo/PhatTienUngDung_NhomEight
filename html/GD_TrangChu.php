@@ -41,7 +41,7 @@ try {
 // Giữ các mục menu đúng theo giao diện HTML mẫu.
 // Chuc nang chua co file: hien thi nhan nhung khong dan den trang 404.
 $menuTrangChu = array(
-    array('ten' => 'Quản lý Bán Hàng', 'file' => 'GD_QuanLyBanHang.html', 'chiChu' => false),
+    array('ten' => 'Quản lý Bán Hàng', 'file' => 'GD_QuanLyBanHang.php', 'chiChu' => false),
     array('ten' => 'Quản lý nhân viên', 'file' => 'GD_QuanLyNhanVien.php', 'chiChu' => true),
 
     array('ten' => 'Lập phiếu đặt hàng', 'file' => 'GD_LapPhieuDatHang.php', 'chiChu' => false),
@@ -137,14 +137,14 @@ $menuTrangChu = array(
             <h2>Tổng Quan Hệ Thống</h2>
 
             <div class="info-card">
-                <b>🏪 Giới thiệu cửa hàng:</b>
+                <b>ðŸª Giới thiệu cửa hàng:</b>
                 Chào mừng bạn đến với hệ thống quản lý chuỗi Cửa hàng Tiện lợi <b>EIGHT Store</b>.
                 Hệ thống hỗ trợ tối ưu hóa quy trình bán hàng, kiểm soát kho hàng, quản lý nhân sự
                 và theo dõi doanh thu một cách nhanh chóng, minh bạch.
             </div>
 
             <div class="info-card">
-                <b>👤 Thông tin tài khoản hiện tại:</b>
+                <b>ðŸ‘¤ Thông tin tài khoản hiện tại:</b>
                 <span>Tên tài khoản: <b><?php echo hTrangChu($tenTaiKhoan); ?></b></span>
                 <span class="divider">|</span>
                 <span>Họ và tên: <b><?php echo hTrangChu($tenNguoiDung); ?></b></span>
@@ -174,3 +174,4 @@ $menuTrangChu = array(
     </main>
 </body>
 </html>
+
