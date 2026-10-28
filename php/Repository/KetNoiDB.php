@@ -24,7 +24,7 @@ class KetNoiDB
             } else {
                 $dsn = 'mysql:host=' . self::HOST . ';port=' . self::PORT . ';dbname=' . self::TEN_DB;
                 $conn = new PDO($dsn, self::USER, self::PASS);
-                $conn->exec('SET NAMES utf8');
+                $conn->exec('SET NAMES utf8');  
             }
             $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             self::$conn = $conn;

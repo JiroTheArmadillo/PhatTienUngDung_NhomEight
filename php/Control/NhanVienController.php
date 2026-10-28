@@ -11,11 +11,7 @@ class NhanVienController
 
     private $rep = null;
 
-    /**
-     * Xử lý request hiện tại và trả về dữ liệu cho giao diện:
-     *  danhSach (NhanVien[]), thongBao (array type,text | null), loiTai (string | null),
-     *  form (null | array mode, ma, values, errors)
-     */
+  
     public function xuLy()
     {
         if (!session_id()) { session_start(); }
