@@ -116,7 +116,7 @@ $result_sp = $control->layDanhSachSanPhamCanNhap();
     <div class="sidebar">
         <div class="logo">EIGHT STORE</div>
         <a href="GD_TrangChu.html" class="active">dashboard</a>
-        <a href="GD_QuanLyBanHang.html" class="active">Quản lý Bán Hàng</a>
+        <a href="GD_QuanLyBanHang.php" class="active">Quản lý Bán Hàng</a>
         <a href="GD_QuanLyNhanVien.html" class="active">Quản lý nhân viên</a>
         <a href="GD_LapPhieuDatHang.php">Lập phiếu đặt hàng</a>
         <a href="GD_DuyetPhieuDatHang.html">Duyệt phiếu đặt hàng</a>

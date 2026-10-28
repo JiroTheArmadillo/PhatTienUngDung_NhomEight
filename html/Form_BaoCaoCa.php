@@ -13,7 +13,7 @@ try {
 }
 ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -168,7 +168,7 @@ try {
     <div class="sidebar">
         <div class="logo">EIGHT</div>
         <a href="GD_TrangChu.html">Dashboard</a>
-        <a href="GD_QuanLyBanHang.html">Quản lý Bán Hàng</a>
+        <a href="GD_QuanLyBanHang.php">Quản lý Bán Hàng</a>
         <a href="GD_QuanLyNhanVien.html">Quản lý nhân viên</a>
         <a href="GD_LapPhieuDatHat.html">Lập phiếu đặt hàng</a>
         <a href="GD_DuyetPhieuDatHat.html">Duyệt phiếu đặt hàng</a>

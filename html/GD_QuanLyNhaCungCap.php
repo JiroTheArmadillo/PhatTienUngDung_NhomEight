@@ -57,7 +57,7 @@ function trangThaiNcc($status) { return $status === 'HoatDong' ? 'Hoạt động
 <div class="sidebar">
     <div class="logo">EIGHT STORE</div>
     <a href="GD_TrangChu.php">dashboard</a>
-    <a href="GD_QuanLyBanHang.html">Quản lý Bán Hàng</a>
+    <a href="GD_QuanLyBanHang.php">Quản lý Bán Hàng</a>
     <a href="GD_QuanLyNhanVien.php">Quản lý nhân viên</a>
     <a href="GD_QuanLyNhaCungCap.php" class="active" aria-current="page">Quản lý nhà cung cấp</a>
     <a href="GD_LapPhieuDatHang.html">Lập phiếu đặt hàng</a>
@@ -107,3 +107,4 @@ function trangThaiNcc($status) { return $status === 'HoatDong' ? 'Hoạt động
 </script>
 </body>
 </html>
+
