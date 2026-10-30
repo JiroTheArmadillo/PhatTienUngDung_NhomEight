@@ -24,7 +24,7 @@ class TaiKhoanRep
             'SELECT tk.ma_tai_khoan, tk.ma_nhan_vien, tk.ten_dang_nhap, tk.mat_khau,
                     tk.vai_tro, tk.trang_thai, nv.ten AS ho_ten,
                     nv.trang_thai AS trang_thai_nhan_vien
-             FROM `Tai Khoan` AS tk
+             FROM `tai khoan` AS tk
              INNER JOIN nhan_vien AS nv ON nv.ma_nhan_vien = tk.ma_nhan_vien
              WHERE tk.ten_dang_nhap = ? LIMIT 1'
         );

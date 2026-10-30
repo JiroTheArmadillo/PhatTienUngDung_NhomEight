@@ -234,14 +234,14 @@ function hienTrangThai($tt)
     <!-- Sidebar -->
     <div class="sidebar">
          <div class="logo">EIGHT STORE</div>
-         <a href="GD_TrangChu.php">dashboard</a>
-         <a href="GD_QuanLyBanHang.php">Quản lý Bán Hàng</a>
-        <a href="GD_QuanLyNhanVien.php" class="active" aria-current="page">Quản lý nhân viên</a>
-        <a href="GD_QuanLyNhaCungCap.php">Quản lý nhà cung cấp</a>
+        <a href="GD_TrangChu.php" class="active">Trang Chủ</a>
+        <a href="GD_QuanLyBanHang.php" class="active">Quản lý Bán Hàng</a>
+        <a href="GD_QuanLyNhanVien.html" class="active">Quản lý nhân viên</a>
         <a href="GD_LapPhieuDatHang.php">Lập phiếu đặt hàng</a>
-        <a href="GD_DuyetPhieuDatHang.php">Duyệt phiếu đặt hàng</a>
-        <a href="GD_XuLyHoanTra.php">Xử lý hoàn trả</a>       
-        <a href="GD_BaoCao.php" class="active" aria-current="page">Báo cáo</a>
+        <a href="GD_DuyetPhieuDatHang.html">Duyệt phiếu đặt hàng</a>
+        <a href="GD_XuLyHoanTra.php">Xử lý hoàn trả</a>
+        <a href="GD_DanhSachKhachHang.php">Quản lý khách hàng</a>
+        <a href="GD_QuanLyBaoCao.php">Quản lý báo cáo</a>
         <a href="logout.php" style="margin-top: auto; color: #e74c3c;">Đăng xuất</a>
     </div>
 
