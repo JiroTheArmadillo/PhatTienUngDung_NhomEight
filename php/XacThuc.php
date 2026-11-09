@@ -4,6 +4,8 @@
  * Không lưu mật khẩu vào session; phiên hết hạn sau 30 phút không hoạt động.
  * Tương thích PHP 5.2.
  */
+require_once dirname(__FILE__) . '/BaoMat.php';
+
 class XacThuc
 {
     const THOI_GIAN_HET_HAN = 1800;
@@ -26,6 +28,23 @@ class XacThuc
             || (time() - (int) $_SESSION['eightmart_hoat_dong']) > self::THOI_GIAN_HET_HAN) {
             unset($_SESSION['eightmart_user'], $_SESSION['eightmart_hoat_dong']);
             return null;
+        }
+        // Phiên phải còn hiệu lực trong DB: nếu tài khoản bị khóa/xóa,
+        // nhân viên bị ngừng hoạt động hoặc bị đổi quyền thì cập nhật ngay.
+        try {
+            require_once dirname(__FILE__) . '/Repository/TaiKhoanRep.php';
+            $rep = new TaiKhoanRep();
+            $userId = isset($_SESSION['eightmart_user']['ma_tai_khoan'])
+                ? (int)$_SESSION['eightmart_user']['ma_tai_khoan'] : 0;
+            $user = $rep->layNguoiDungTheoTaiKhoan($userId);
+            if ($user === null) {
+                unset($_SESSION['eightmart_user'], $_SESSION['eightmart_hoat_dong']);
+                return null;
+            }
+            $_SESSION['eightmart_user'] = $user;
+        } catch (Exception $e) {
+            error_log('[XacThuc] Khong kiem tra duoc phien: ' . $e->getMessage());
+            return null; // lỗi DB: không cấp quyền dựa vào dữ liệu session cũ
         }
         $_SESSION['eightmart_hoat_dong'] = time();
         return $_SESSION['eightmart_user'];
@@ -57,7 +76,7 @@ class XacThuc
     {
         self::batDau();
         if (!isset($_SESSION['eightmart_csrf_logout'])) {
-            $_SESSION['eightmart_csrf_logout'] = sha1(uniqid(mt_rand(), true));
+            $_SESSION['eightmart_csrf_logout'] = BaoMat::taoNgauNhien(16);
         }
         return $_SESSION['eightmart_csrf_logout'];
     }
@@ -67,7 +86,7 @@ class XacThuc
         self::batDau();
         return is_string($token) && $token !== ''
             && isset($_SESSION['eightmart_csrf_logout'])
-            && $token === $_SESSION['eightmart_csrf_logout'];
+            && BaoMat::bangNhau($token, $_SESSION['eightmart_csrf_logout']);
     }
 
     public static function dangXuat()
