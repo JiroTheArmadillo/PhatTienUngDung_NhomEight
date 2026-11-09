@@ -11,12 +11,20 @@ class NhanVienController
 
     private $rep = null;
 
-  
+    /**
+     * Xử lý request hiện tại và trả về dữ liệu cho giao diện:
+     *  danhSach (NhanVien[]), thongBao (array type,text | null), loiTai (string | null),
+     *  form (null | array mode, ma, values, errors)
+     */
     public function xuLy()
     {
-        if (!session_id()) { session_start(); }
+        require_once dirname(__FILE__) . '/../XacThuc.php';
+        $user = XacThuc::yeuCauDangNhap();
+        $isOwner = $user['vai_tro'] === 'ChuDoanhNghiep';
+        $ownId = (int)$user['ma_nhan_vien'];
 
-        $vm = array('danhSach' => array(), 'thongBao' => null, 'loiTai' => null, 'form' => null);
+        if (!isset($_SESSION['nv_csrf'])) $_SESSION['nv_csrf'] = BaoMat::taoNgauNhien(16);
+        $vm = array('danhSach' => array(), 'thongBao' => null, 'loiTai' => null, 'form' => null, 'caNhan' => null);
 
         // thông báo lưu từ lần xử lý trước (Post-Redirect-Get)
         if (isset($_SESSION['nv_thongbao'])) {
@@ -28,15 +36,17 @@ class NhanVienController
             $this->rep = new NhanVienRep();
 
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                if (!isset($_POST['csrf_token']) || !isset($_SESSION['nv_csrf']) || !BaoMat::bangNhau($_SESSION['nv_csrf'], $_POST['csrf_token'])) { header('HTTP/1.1 403 Forbidden'); throw new Exception('CSRF token không hợp lệ'); }
                 $hanhDong = isset($_POST['action']) ? $_POST['action'] : '';
-                if ($hanhDong === 'them')     { $vm['form'] = $this->xuLyThem(); }
-                elseif ($hanhDong === 'sua')  { $vm['form'] = $this->xuLySua(); }
-                elseif ($hanhDong === 'xoa')  { $this->xuLyXoa(); }
+                if ($hanhDong === 'them' && $isOwner)     { $vm['form'] = $this->xuLyThem(); }
+                elseif ($hanhDong === 'sua' && ($isOwner || (int)$this->post('ma_nhan_vien')===$ownId))  { $vm['form'] = $this->xuLySua(); }
+                elseif ($hanhDong === 'xoa' && $isOwner)  { $this->xuLyXoa(); }
+                else { header('HTTP/1.1 403 Forbidden'); $vm['thongBao'] = array('danger','Bạn không có quyền thực hiện thao tác này.'); }
             } else {
                 $hanhDong = isset($_GET['action']) ? $_GET['action'] : '';
-                if ($hanhDong === 'them') {
+                if ($hanhDong === 'them' && $isOwner) {
                     $vm['form'] = $this->bieuMau('them', 0, array('ten' => '', 'cccd' => '', 'gioi_tinh' => '', 'sdt' => '', 'ngay_sinh' => ''));
-                } elseif ($hanhDong === 'sua') {
+                } elseif ($hanhDong === 'sua' && ($isOwner || (int)(isset($_GET['id']) ? $_GET['id'] : 0)===$ownId)) {
                     $nv = $this->rep->layTheoMa(isset($_GET['id']) ? $_GET['id'] : 0);
                     if ($nv === null) {
                         $vm['thongBao'] = array('danger', 'Không tìm thấy nhân viên cần sửa.');
@@ -50,13 +60,14 @@ class NhanVienController
             }
         } catch (Exception $e) {
             error_log('[NhanVien] ' . $e->getMessage());
-            $vm['thongBao'] = array('danger', 'Không thể kết nối hoặc xử lý dữ liệu. Vui lòng thử lại sau.');
+            $vm['thongBao'] = array('danger', 'Không thể xử lý yêu cầu. Vui lòng kiểm tra dữ liệu hoặc quyền truy cập.');
         }
 
         // UC06: truy xuất danh sách
         try {
             if ($this->rep === null) { throw new Exception('Chưa kết nối CSDL'); }
-            $vm['danhSach'] = $this->rep->layTatCa();
+            $vm['danhSach'] = $isOwner ? $this->rep->layTatCa() : array();
+            $vm['caNhan'] = !$isOwner ? $this->rep->layTheoMa($ownId) : null;
         } catch (Exception $e) {
             error_log('[NhanVien] ' . $e->getMessage());                 // 5.2.2 ghi nhận lỗi
             $vm['loiTai'] = 'Không thể tải dữ liệu nhân viên.';          // 5.2.1
@@ -85,7 +96,7 @@ class NhanVienController
         // BỔ SUNG: phải lưu được CẢ nhân viên lẫn bảng Tai Khoan mới commit.
         try {
             $this->rep->batDauGiaoDich();
-            $ma = $this->rep->them($nv, $matKhau);
+            $ma = $this->rep->them($nv);
             $tenDangNhap = $this->rep->taoTaiKhoan($ma, $nv->getCccd(), $matKhau);
             $this->rep->xacNhan();
         } catch (Exception $e) {
@@ -110,6 +121,9 @@ class NhanVienController
         }
         $nv = new NhanVien($this->post('ten'), $this->post('cccd'), $this->post('gioi_tinh'), $this->post('sdt'), $this->post('ngay_sinh'));
         $nv->setMaNhanVien($ma);
+        if ($_SESSION['eightmart_user']['vai_tro'] !== 'ChuDoanhNghiep' && $nv->getCccd() !== $hienTai->getCccd()) {
+            return $this->bieuMau('sua', $ma, $this->giaTri($nv), array('cccd'=>'Nhân viên không được thay đổi CCCD.'));
+        }
         $loi = $nv->kiemTra();                                           // 8.1 + sai định dạng
         if (!isset($loi['cccd']) && $this->rep->tonTaiCccd($nv->getCccd(), $ma)) {
             $loi['cccd'] = 'CCCD đã tồn tại trong hệ thống.';
@@ -126,8 +140,12 @@ class NhanVienController
         try {
             // BỔ SUNG: đồng bộ thay đổi CCCD với tài khoản trong cùng transaction.
             $this->rep->batDauGiaoDich();
-            $this->rep->capNhat($nv);
+            $this->rep->capNhat($nv, isset($_SESSION['eightmart_user']) && $_SESSION['eightmart_user']['vai_tro'] === 'ChuDoanhNghiep');
             $this->rep->xacNhan();
+            if ((int)$_SESSION['eightmart_user']['ma_nhan_vien'] === $ma) {
+                $_SESSION['eightmart_user']['ho_ten'] = $nv->getTen();
+                if ($hienTai->getTenDangNhap() === $hienTai->getCccd()) $_SESSION['eightmart_user']['ten_dang_nhap'] = $nv->getCccd();
+            }
         } catch (Exception $e) {
             $this->rep->hoanTac();
             error_log('[NhanVien] capNhat: ' . $e->getMessage());
@@ -156,7 +174,9 @@ class NhanVienController
                     . ' vì nhân viên đã phát sinh dữ liệu (ca làm việc, đơn hàng, phiếu...).');
                 return;
             }
-            $this->rep->xoa($nv->getMaNhanVien());                       // bước 11
+            if (!$this->rep->xoa($nv->getMaNhanVien())) {
+                $this->chuyenHuong('danger', 'Không thể xóa nhân viên vì còn dữ liệu tham chiếu.'); return;
+            }                       // bước 11
         } catch (Exception $e) {
             error_log('[NhanVien] xoa: ' . $e->getMessage());
             $this->chuyenHuong('danger', 'Xóa không thành công. Dữ liệu hiện có được giữ nguyên.');
