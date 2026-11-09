@@ -1,5 +1,5 @@
 <?php
-// php/Control/LapPhieuDatHangControl.php
+// php/Control/lapPhieuDatHangControl.php
 require_once dirname(__FILE__) . '/../Repository/PhieuDatHangRepository.php';
 require_once dirname(__FILE__) . '/../Entity/PhieuDeNghiDatHang.php';
 require_once dirname(__FILE__) . '/../Entity/ChiTietPhieuDatHang.php';

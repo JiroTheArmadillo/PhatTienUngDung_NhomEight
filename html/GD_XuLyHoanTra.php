@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once dirname(__FILE__) . '/../php/Control/HoanTraController.php';
+require_once dirname(__FILE__) . '/../php/Control/hoanTraController.php';
  
 $controller = new HoanTraController();
 $danhSach = array();
@@ -48,74 +48,9 @@ function hienTrangThai($tt)
     <meta charset="UTF-8">
     <title>Xử Lý Yêu Cầu Hoàn Trả</title>
     <style>
-            * {
-        
+    * {
         margin: 0;
         padding: 0;
-        
-    }
-
-    body {
-        display: flex;
-        height: 100vh;
-        color: #333;
-    }
-
-    .sidebar {
-        width: 30%;
-        background-color: #2c3e50;
-        color: white;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .sidebar .logo {
-        padding: 20px;
-        font-size: 20px;
-        font-weight: bold;
-        background-color: #1a252f;
-        text-align: center;
-        
-    }
-
-    .sidebar a {
-        padding: 15px 20px;
-        color: #bdc3c7;
-        text-decoration: none;
-        font-size: 14px;
-    }
-
-    .sidebar a:hover, 
-    .sidebar a.active {
-        background-color: #34495e;
-        color: white;
-        
-    }
-
-    .main-content {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        overflow-y: auto;
-    }
-
-    /* Header nằm trên cùng */
-    .header {
-        background: white;
-        padding: 15px 30px;
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        border-bottom: 1px solid #e0e0e0;
-    }
-
-    .header .user-info {
-        font-size: 14px;
-    }
-
-    /* Content bên trong */
-    .content {
-        padding: 25px 30px;
     }
 
     .content h2 {
@@ -227,9 +162,9 @@ function hienTrangThai($tt)
 .empty { text-align: center; color: #888; padding: 25px; }
 
      </style>
-    <link rel="stylesheet" href="giao-dien.css">
+    <link rel="stylesheet" href="khung-giao-dien.css">
 </head>
-<body>
+<body class="giao-dien-chung">
 
     <!-- Sidebar -->
     <div class="sidebar">
@@ -242,7 +177,7 @@ function hienTrangThai($tt)
         <a href="GD_DuyetPhieuDatHang.php">Duyệt phiếu đặt hàng</a>
         <a href="GD_XuLyHoanTra.php">Xử lý hoàn trả</a>       
         <a href="GD_BaoCao.php" class="active" aria-current="page">Báo cáo</a>
-        <a href="logout.php" style="margin-top: auto; color: #e74c3c;">Đăng xuất</a>
+        <a href="logout.php">Đăng xuất</a>
     </div>
 
     <!-- Main Content -->
@@ -296,7 +231,7 @@ function hienTrangThai($tt)
                         <td>
                             <?php if ($choDuyet): ?>
                                 <div class="actions">
-                                    <form method="post" action="../php/Control/xuly_hoantra.php">
+                                    <form method="post" action="../php/Control/xuLyHoanTra.php">
                                         <input type="hidden" name="id" value="<?php echo (int)$yc['ma_yeu_cau']; ?>">
                                         <input type="hidden" name="action" value="accept">
                                         <button type="submit" class="btn btn-success" style="padding: 5px 10px;">Chấp nhận</button>
@@ -319,7 +254,7 @@ function hienTrangThai($tt)
     <div id="modal-tu-choi" class="modal" style="display: none;">
         <div class="modal-box">
             <h3>Từ chối yêu cầu hoàn trả <span id="modal-ma-yeu-cau"></span></h3>
-            <form method="post" action="../php/Control/xuly_hoantra.php" onsubmit="return kiemTraLyDo();">
+            <form method="post" action="../php/Control/xuLyHoanTra.php" onsubmit="return kiemTraLyDo();">
                 <input type="hidden" name="id" id="modal-id" value="">
                 <input type="hidden" name="action" value="reject">
                 <label for="modal-ly-do">Lý do từ chối</label>

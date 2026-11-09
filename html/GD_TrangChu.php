@@ -6,7 +6,7 @@
  * Tương thích PHP 5.2 trở lên.
  */
 require_once dirname(__FILE__) . '/../php/XacThuc.php';
-require_once dirname(__FILE__) . '/../php/Repository/KetNoiDB.php';
+require_once dirname(__FILE__) . '/../db.php';
 $nguoiDung = XacThuc::yeuCauDangNhap();
 $laChuDoanhNghiep = isset($nguoiDung['vai_tro']) && $nguoiDung['vai_tro'] === 'ChuDoanhNghiep';
 $tenNguoiDung = isset($nguoiDung['ho_ten']) ? $nguoiDung['ho_ten'] : '';
@@ -25,10 +25,12 @@ $soHoaDonDaThanhToan = '—';
 $tongDoanhThu = '—';
 $loiThongKe = false;
 try {
-    $db = KetNoiDB::layKetNoi();
-    $soLuongTon = $db->query('SELECT COALESCE(SUM(so_luong_ton), 0) FROM san_pham')->fetchColumn();
-    $soHoaDon = $db->query("SELECT COUNT(DISTINCT ma_hoa_don) FROM thanh_toan WHERE trang_thai = 'ThanhCong'")->fetchColumn();
-    $doanhThu = $db->query("SELECT COALESCE(SUM(so_tien), 0) FROM thanh_toan WHERE trang_thai = 'ThanhCong'")->fetchColumn();
+    $soLuongTon = eightmart_mysqli_fetch_value(eightmart_mysqli_execute(
+        'SELECT COALESCE(SUM(so_luong_ton), 0) FROM san_pham'));
+    $soHoaDon = eightmart_mysqli_fetch_value(eightmart_mysqli_execute(
+        "SELECT COUNT(DISTINCT ma_hoa_don) FROM thanh_toan WHERE trang_thai = 'ThanhCong'"));
+    $doanhThu = eightmart_mysqli_fetch_value(eightmart_mysqli_execute(
+        "SELECT COALESCE(SUM(so_tien), 0) FROM thanh_toan WHERE trang_thai = 'ThanhCong'"));
     $soSanPhamTrongKho = number_format((float) $soLuongTon, 0, ',', '.');
     $soHoaDonDaThanhToan = number_format((float) $soHoaDon, 0, ',', '.');
     $tongDoanhThu = number_format((float) $doanhThu, 0, ',', '.') . ' đ';
@@ -60,26 +62,7 @@ $menuTrangChu = array(
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Trang Chủ - Hệ Thống Quản Lý Cửa Hàng</title>
     <style>
-        /* Giao dien trang chu theo mau GD_TrangChu.php nguoi dung cung cap. */
         * { margin: 0; padding: 0; }
-        body { display: flex; min-height: 100vh; color: #333; }
-        .sidebar { width: 30%; background-color: #2c3e50; color: white;
-            display: flex; flex-direction: column; flex-shrink: 0; }
-        .sidebar .logo { padding: 20px; font-size: 20px; font-weight: bold;
-            background-color: #1a252f; text-align: center; }
-        .sidebar a, .sidebar .side-disabled { display: block; padding: 15px 20px;
-            color: #bdc3c7; text-decoration: none; font-size: 14px; }
-        .sidebar a:hover, .sidebar a.active { background-color: #34495e; color: white; }
-        .sidebar .side-disabled { opacity: .65; cursor: default; }
-        .sidebar .logout { margin-top: auto; }
-        .sidebar .logout button { display: block; padding: 15px 20px; width: 100%;
-            color: #e74c3c; text-align: left; background: transparent; border: 0;
-            font: inherit; font-size: 14px; cursor: pointer; }
-        .sidebar .logout button:hover, .sidebar .logout button:focus {
-            background-color: #34495e; }
-        .main-content { flex-grow: 1; min-width: 0; display: flex; flex-direction: column; }
-        .main-content .header { display: flex; flex-direction: row; justify-content: flex-end; }
-        .main-content .header .user-info { margin: 20px; }
         .main-content .content h2 { text-align: center; }
         .info-card { background: white; padding: 20px; border-radius: 6px;
             margin-bottom: 20px; font-size: 15px; }
@@ -94,25 +77,18 @@ $menuTrangChu = array(
         .stat-box .number { font-size: 24px; font-weight: bold;
             color: #2c3e50; overflow-wrap: anywhere; }
         .stats-warning { margin: 15px 20px; color: #a65008; font-size: 13px; }
-        /* Phu hop man hinh nho, khong thay doi layout desktop tu file HTML. */
         @media (max-width: 840px) {
-            .sidebar { width: 220px; }
             .stats-container { flex-wrap: wrap; }
             .stat-box { flex: 1 1 180px; }
         }
         @media (max-width: 540px) {
-            body { display: block; }
-            .sidebar { width: 100%; }
-            .sidebar .logo { text-align: left; }
-            .sidebar a, .sidebar .side-disabled { padding: 11px 18px; }
-            .main-content .header { justify-content: flex-start; }
             .stats-container { display: block; }
             .stat-box { margin-bottom: 8px; }
         }
     </style>
-    <link rel="stylesheet" href="giao-dien.css">
+    <link rel="stylesheet" href="khung-giao-dien.css">
 </head>
-<body>
+<body class="giao-dien-chung">
     <!-- Trang chu hien thi ngay sau khi dang nhap; vao nhan vien qua menu ben trai. -->
     <aside class="sidebar">
         <div class="logo">EIGHT STORE</div>
@@ -176,4 +152,3 @@ $menuTrangChu = array(
     </main>
 </body>
 </html>
-

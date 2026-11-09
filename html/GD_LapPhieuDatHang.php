@@ -5,8 +5,9 @@ error_reporting(E_ALL);
 
 // 1. Nhúng class Xác thực của Thái, db.php và Control
 require_once dirname(__FILE__) . '/../php/XacThuc.php';
-require_once dirname(__FILE__) . '/db.php';
-require_once dirname(__FILE__) . '/../php/Control/LapPhieuDatHangControl.php';
+require_once dirname(__FILE__) . '/../db.php';
+$conn = eightmart_mysqli_connection();
+require_once dirname(__FILE__) . '/../php/Control/lapPhieuDatHangControl.php';
 
 if (!isset($conn)) {
     die("Lỗi: Không tìm thấy kết nối CSDL trong db.php!");
@@ -89,15 +90,6 @@ $result_sp = $control->layDanhSachSanPhamCanNhap();
     <title>Lập Phiếu Đặt Hàng</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { display: flex; height: 100vh; color: #333; font-family: Arial, sans-serif; }
-        .sidebar { width: 30%; background-color: #2c3e50; color: white; display: flex; flex-direction: column; }
-        .sidebar .logo { padding: 20px; font-size: 20px; font-weight: bold; background-color: #1a252f; text-align: center; }
-        .sidebar a { padding: 15px 20px; color: #bdc3c7; text-decoration: none; font-size: 14px; }
-        .sidebar a:hover, .sidebar a.active { background-color: #34495e; color: white; }
-        .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
-        .header { background: white; padding: 15px 30px; display: flex; justify-content: flex-end; align-items: center; border-bottom: 1px solid #e0e0e0; }
-        .header .user-info { font-size: 14px; }
-        .content { padding: 25px 30px; }
         .content h2 { font-size: 22px; margin-bottom: 15px; color: #2c3e50; }
         table { width: 100%; border-collapse: collapse; background: white; margin-top: 15px; }
         th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
@@ -110,9 +102,9 @@ $result_sp = $control->layDanhSachSanPhamCanNhap();
         .alert-danger { background-color: #f8d7da; color: #721c24; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #f5c6cb; }
         .phieu-card { background: #fff; border: 2px solid #2ecc71; border-radius: 6px; padding: 20px; margin-bottom: 20px; }
     </style>
-    <link rel="stylesheet" href="giao-dien.css">
+    <link rel="stylesheet" href="khung-giao-dien.css">
 </head>
-<body>
+<body class="giao-dien-chung">
 
     <div class="sidebar">
         <div class="logo">EIGHT STORE</div>
@@ -124,7 +116,7 @@ $result_sp = $control->layDanhSachSanPhamCanNhap();
         <a href="GD_DuyetPhieuDatHang.php">Duyệt phiếu đặt hàng</a>
         <a href="GD_XuLyHoanTra.php">Xử lý hoàn trả</a>       
         <a href="GD_BaoCao.php" class="active" aria-current="page">Báo cáo</a>
-        <a href="logout.php" style="margin-top: auto; color: #e74c3c;">Đăng xuất</a>
+        <a href="logout.php">Đăng xuất</a>
     </div>
 
     <div class="main-content">

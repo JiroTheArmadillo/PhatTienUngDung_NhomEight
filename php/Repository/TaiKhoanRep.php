@@ -1,9 +1,9 @@
 <?php
 /**
  * BỔ SUNG TRANG ĐĂNG NHẬP: đọc tài khoản từ bảng `Tai Khoan`.
- * Dùng PDO prepared statements, tương thích PHP 5.2 / MySQL 5.x.
+ * Dùng MySQLi prepared statements, tương thích PHP 5.2 / MySQL 5.x.
  */
-require_once dirname(__FILE__) . '/KetNoiDB.php';
+require_once dirname(__FILE__) . '/../../db.php';
 
 class TaiKhoanRep
 {
@@ -11,7 +11,7 @@ class TaiKhoanRep
 
     public function __construct()
     {
-        $this->db = KetNoiDB::layKetNoi();
+        $this->db = eightmart_mysqli_connection();
     }
 
     /**
@@ -20,16 +20,16 @@ class TaiKhoanRep
      */
     public function xacThuc($tenDangNhap, $matKhau)
     {
-        $st = $this->db->prepare(
+        $st = eightmart_mysqli_execute(
             'SELECT tk.ma_tai_khoan, tk.ma_nhan_vien, tk.ten_dang_nhap, tk.mat_khau,
                     tk.vai_tro, tk.trang_thai, nv.ten AS ho_ten,
                     nv.trang_thai AS trang_thai_nhan_vien
              FROM `Tai Khoan` AS tk
              INNER JOIN nhan_vien AS nv ON nv.ma_nhan_vien = tk.ma_nhan_vien
-             WHERE tk.ten_dang_nhap = ? LIMIT 1'
+             WHERE tk.ten_dang_nhap = ? LIMIT 1',
+            array($tenDangNhap)
         );
-        $st->execute(array($tenDangNhap));
-        $row = $st->fetch(PDO::FETCH_ASSOC);
+        $row = eightmart_mysqli_fetch_one_assoc($st);
 
         // Database gốc dùng MD5 và cột CHAR(32); giữ tương thích với tài khoản mẫu.
         if (!$row || $row['trang_thai'] !== 'HoatDong'
