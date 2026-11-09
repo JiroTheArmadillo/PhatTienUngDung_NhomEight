@@ -6,6 +6,9 @@ $nguoiDungDangNhap = XacThuc::yeuCauDangNhap();
 require_once dirname(__FILE__) . '/../php/Control/NhanVienController.php';
 $controller = new NhanVienController();
 $vm = $controller->xuLy();
+$laChu = $nguoiDungDangNhap['vai_tro'] === 'ChuDoanhNghiep';
+$vaiTroGoc = isset($nguoiDungDangNhap['vai_tro_goc']) ? $nguoiDungDangNhap['vai_tro_goc'] : 'NhanVien';
+$vaiTroHienThi = $laChu ? 'Chủ doanh nghiệp' : ($vaiTroGoc === 'ThuNgan' ? 'Thu ngân' : ($vaiTroGoc === 'ThuKho' ? 'Thủ kho' : 'Nhân viên'));
 $self = basename($_SERVER['SCRIPT_NAME']);   // tên file hiện tại (.php)
 function h($v) { return htmlspecialchars($v, ENT_QUOTES, 'UTF-8'); }
 ?>
@@ -170,22 +173,15 @@ function h($v) { return htmlspecialchars($v, ENT_QUOTES, 'UTF-8'); }
     .form-group input.has-error:focus, .form-group select.has-error:focus { outline-color: #e74c3c; }
 
      </style>
-        <link rel="stylesheet" href="giao-dien.css">
-</head>
+    </head>
     <body>
 
         <!-- Sidebar Menu -->
         <div class="sidebar">
-             <!-- Tro ve trang chu; quan ly nhan vien chi hien khi chon menu nay. -->
+             <!-- Chỉ liên kết đến những chức năng thực sự có trong gói này. -->
              <div class="logo">EIGHT STORE</div>
-             <a href="GD_TrangChu.php">dashboard</a>
-         <a href="GD_QuanLyBanHang.php">Quản lý Bán Hàng</a>
-        <a href="GD_QuanLyNhanVien.php" class="active" aria-current="page">Quản lý nhân viên</a>
-        <a href="GD_QuanLyNhaCungCap.php">Quản lý nhà cung cấp</a>
-        <a href="GD_LapPhieuDatHang.php">Lập phiếu đặt hàng</a>
-        <a href="GD_DuyetPhieuDatHang.php">Duyệt phiếu đặt hàng</a>
-        <a href="GD_XuLyHoanTra.php">Xử lý hoàn trả</a>       
-        <a href="GD_BaoCao.php" class="active" aria-current="page">Báo cáo</a>
+             <a href="GD_TrangChu.php">Trang chủ</a>
+             <a href="GD_QuanLyNhanVien.php" class="active" aria-current="page"><?php echo $laChu ? 'Quản lý nhân viên' : 'Thông tin cá nhân'; ?></a>
         <!-- UC02: nút Đăng xuất gửi POST, kết thúc phiên và quay về đăng nhập. -->
         <form method="post" action="logout.php" style="margin-top: auto; margin-bottom: 0;">
             <input type="hidden" name="csrf_token" value="<?php echo h(XacThuc::layTokenDangXuat()); ?>">
@@ -199,28 +195,31 @@ function h($v) { return htmlspecialchars($v, ENT_QUOTES, 'UTF-8'); }
         <div class="main-content">
             <div class="header">
                 <!-- BỔ SUNG: hiển thị họ tên và vai trò thực của tài khoản đăng nhập. -->
-                <span>Chào mừng, <b><?php echo h($nguoiDungDangNhap['ho_ten']); ?> (<?php echo h($nguoiDungDangNhap['vai_tro'] === 'ChuDoanhNghiep' ? 'Chủ doanh nghiệp' : 'Nhân viên'); ?>)</b></span>
+                <span>Chào mừng, <b><?php echo h($nguoiDungDangNhap['ho_ten']); ?> (<?php echo h($vaiTroHienThi); ?>)</b></span>
             </div>
 
             <div class="content">
-                <h2>Danh sách Nhân viên</h2>
+                <h2><?php echo $laChu ? "Danh sách nhân viên" : "Thông tin cá nhân"; ?></h2>
 
                 <?php if ($vm['thongBao']): ?>
                 <div class="alert alert-<?php echo h($vm['thongBao'][0]); ?>"><?php echo h($vm['thongBao'][1]); ?></div>
                 <?php endif; ?>
 
+                <?php if ($laChu): ?>
                 <!-- Nút thêm mới -->
                 <div style="margin: 15px 0;">
                     <a href="<?php echo $self; ?>?action=them" class="btn btn-primary">+ Thêm
                         nhân viên mới</a>
                 </div>
 
+                <?php endif; ?>
         <?php if ($vm['form']): $f = $vm['form']; $e = $f['errors']; $v = $f['values']; ?>
         <div class="form-nv">
                 <h3><?php echo $f['mode'] === 'them' ? 'Thêm nhân viên mới' : 'Cập nhật thông tin nhân viên'; ?></h3>
                 <?php if ($f['loiChung']): ?><div class="alert alert-danger"><?php echo h($f['loiChung']); ?></div><?php endif; ?>
                 <?php if ($e): ?><div class="alert alert-danger">Vui lòng kiểm tra lại thông tin đã nhập.</div><?php endif; ?>
                 <form id="nhanVienForm" method="post" action="<?php echo $self; ?>" novalidate>
+                    <input type="hidden" name="csrf_token" value="<?php echo h($_SESSION['nv_csrf']); ?>">
                     <input type="hidden" name="action" value="<?php echo h($f['mode']); ?>">
                     <input type="hidden" name="ma_nhan_vien" value="<?php echo (int) $f['ma']; ?>">
 
@@ -231,7 +230,7 @@ function h($v) { return htmlspecialchars($v, ENT_QUOTES, 'UTF-8'); }
                     </div>
                     <div class="form-group">
                         <label>CCCD *</label>
-                        <input type="text" name="cccd" maxlength="12" inputmode="numeric" required value="<?php echo h($v['cccd']); ?>"<?php if (isset($e['cccd'])) echo ' class="has-error"'; ?>>
+                        <input type="text" name="cccd" maxlength="12" inputmode="numeric" required value="<?php echo h($v['cccd']); ?>"<?php if (!$laChu) echo " readonly"; ?><?php if (isset($e['cccd'])) echo ' class="has-error"'; ?>>
                         <div class="error-text" data-error-for="cccd"><?php if (isset($e['cccd'])) echo h($e['cccd']); ?></div>
                     </div>
                     <div class="form-group">
@@ -239,7 +238,7 @@ function h($v) { return htmlspecialchars($v, ENT_QUOTES, 'UTF-8'); }
                         <select name="gioi_tinh" required<?php if (isset($e['gioi_tinh'])) echo ' class="has-error"'; ?>>
                             <option value="">-- Chọn giới tính --</option>
                             <option value="Nam"<?php if ($v['gioi_tinh'] === 'Nam') echo ' selected'; ?>>Nam</option>
-                            <option value="Nu"<?php if ($v['gioi_tinh'] === 'Nu') echo ' selected'; ?>>Nữ</option>
+                            <option value="Nữ"<?php if ($v['gioi_tinh'] === 'Nu' || $v['gioi_tinh'] === 'Nữ') echo ' selected'; ?>>Nữ</option>
                         </select>
                         <div class="error-text" data-error-for="gioi_tinh"><?php if (isset($e['gioi_tinh'])) echo h($e['gioi_tinh']); ?></div>
                     </div>
@@ -266,6 +265,7 @@ function h($v) { return htmlspecialchars($v, ENT_QUOTES, 'UTF-8'); }
         </div>
         <?php endif; ?>
 
+                <?php if ($laChu): ?>
                 <!-- Bảng hiển thị -->
                 <table>
                     <thead>
@@ -295,25 +295,42 @@ function h($v) { return htmlspecialchars($v, ENT_QUOTES, 'UTF-8'); }
                                     class="btn btn-primary"
                                     style="padding: 5px 10px; font-size: 12px;">Sửa</a>
                                 <!-- BỔ SUNG: chỉ mở modal xóa, không dùng window.confirm(). -->
-                                <button type="button" class="btn btn-danger btn-mo-xoa"
+                                <?php if (!$nv->laChuDoanhNghiep()): ?><button type="button" class="btn btn-danger btn-mo-xoa"
                                     data-id="<?php echo (int) $nv->getMaNhanVien(); ?>"
                                     data-name="<?php echo h($nv->getMaHienThi() . ' - ' . $nv->getTen()); ?>"
-                                    style="padding: 5px 10px; font-size: 12px;">Xóa</button>
+                                    style="padding: 5px 10px; font-size: 12px;">Xóa</button><?php endif; ?>
                             </td>
                         </tr>
                         <?php endforeach; endif; ?>
                     </tbody>
                 </table>
+                <?php else: ?>
+                <p>Bạn chỉ được xem và sửa thông tin của chính mình.</p>
+                <?php if ($vm['caNhan']): $cn = $vm['caNhan']; ?>
+                    <table style="max-width:750px"><tbody>
+                        <tr><th>Mã nhân viên</th><td><?php echo h($cn->getMaHienThi()); ?></td></tr>
+                        <tr><th>Họ tên</th><td><?php echo h($cn->getTen()); ?></td></tr>
+                        <tr><th>CCCD</th><td><?php echo h($cn->getCccd()); ?></td></tr>
+                        <tr><th>Giới tính</th><td><?php echo h($cn->getGioiTinhHienThi()); ?></td></tr>
+                        <tr><th>Số điện thoại</th><td><?php echo h($cn->getSdt()); ?></td></tr>
+                        <tr><th>Ngày sinh</th><td><?php echo h($cn->getNgaySinh()); ?></td></tr>
+                        <tr><th>Trạng thái</th><td><?php echo h($cn->getTrangThai()); ?></td></tr>
+                    </tbody></table>
+                <?php endif; ?>
+                <p style="margin-top:15px"><a class="btn btn-primary" href="<?php echo $self; ?>?action=sua&amp;id=<?php echo (int)$nguoiDungDangNhap['ma_nhan_vien']; ?>">Sửa thông tin cá nhân</a></p>
+                <?php endif; ?>
             </div>
         </div>
 
         <!-- BỔ SUNG: modal xóa xuất hiện ngay trên trang, 2 nút Xác nhận / Hủy. -->
+        <?php if ($laChu): ?>
         <div id="modalXoaNhanVien" class="modal-overlay" aria-hidden="true">
             <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="modalXoaTitle"
                 aria-describedby="modalXoaMessage">
                 <h3 id="modalXoaTitle">Xác nhận xóa nhân viên</h3>
                 <p id="modalXoaMessage">Bạn có chắc chắn muốn xóa nhân viên này không?</p>
                 <form id="formXoaNhanVien" method="post" action="<?php echo $self; ?>">
+                    <input type="hidden" name="csrf_token" value="<?php echo h($_SESSION['nv_csrf']); ?>">
                     <input type="hidden" name="action" value="xoa">
                     <input type="hidden" name="ma_nhan_vien" id="maNhanVienCanXoa" value="">
                     <div class="modal-actions">
@@ -324,6 +341,7 @@ function h($v) { return htmlspecialchars($v, ENT_QUOTES, 'UTF-8'); }
             </div>
         </div>
 
+        <?php endif; ?>
         <script>
         // BỔ SUNG: kiểm tra biểu mẫu trên giao diện; PHP vẫn kiểm tra lại trước khi ghi DB.
         (function () {
@@ -339,7 +357,7 @@ function h($v) { return htmlspecialchars($v, ENT_QUOTES, 'UTF-8'); }
                         if (!giaTri) loi = 'Vui lòng nhập CCCD.';
                         else if (!/^[0-9]{12}$/.test(giaTri)) loi = 'CCCD phải gồm đúng 12 chữ số.';
                     } else if (tenTruong === 'gioi_tinh') {
-                        if (giaTri !== 'Nam' && giaTri !== 'Nu') loi = 'Vui lòng chọn giới tính.';
+                        if (giaTri !== 'Nam' && giaTri !== 'Nữ') loi = 'Vui lòng chọn giới tính.';
                     } else if (tenTruong === 'sdt') {
                         if (!giaTri) loi = 'Vui lòng nhập số điện thoại.';
                         else if (!/^0[0-9]{9}$/.test(giaTri)) loi = 'Số điện thoại gồm 10 chữ số, bắt đầu bằng 0.';
@@ -386,6 +404,7 @@ function h($v) { return htmlspecialchars($v, ENT_QUOTES, 'UTF-8'); }
             var modal = document.getElementById('modalXoaNhanVien');
             var nutHuy = document.getElementById('huyXoaNhanVien');
             var nutXacNhan = document.getElementById('xacNhanXoaNhanVien');
+            if (modal) {
             var nutTruoc = null;
             function dongModal() {
                 modal.classList.remove('is-open');
@@ -410,6 +429,7 @@ function h($v) { return htmlspecialchars($v, ENT_QUOTES, 'UTF-8'); }
             document.addEventListener('keydown', function (event) {
                 if ((event.key === 'Escape' || event.keyCode === 27) && modal.classList.contains('is-open')) dongModal();
             });
+            } // chỉ kích hoạt chức năng xóa cho chủ doanh nghiệp
         })();
         </script>
     </body>
