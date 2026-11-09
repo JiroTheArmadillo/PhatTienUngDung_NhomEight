@@ -1,6 +1,6 @@
 <?php
 /**
- * Entity NhanVien - ánh xạ bảng `nhan_vien` (CSDL eightmart).
+ * Entity NhanVien - ánh xạ bảng `NhanVien` trong schema.sql riêng.
  * Tương thích PHP 5.2.
  */
 class NhanVien
@@ -30,13 +30,15 @@ class NhanVien
     }
 
     /** Tạo entity từ một dòng kết quả của bảng nhan_vien. */
-    public static function tuDong($row)
-    {
-        $nv = new NhanVien($row['ten'], $row['cccd'], $row['gioi_tinh'], $row['sdt'], isset($row['ngay_sinh']) ? $row['ngay_sinh'] : '');
-        $nv->maNhanVien  = (int) $row['ma_nhan_vien'];
-        $nv->tenDangNhap = $row['ten_dang_nhap'];
-        $nv->vaiTro      = $row['vai_tro'];
-        $nv->trangThai   = $row['trang_thai'];
+    public static function tuDong($row) {
+        $nv = new NhanVien($row['Ten'], $row['Cccd'], $row['GioiTinh'], $row['Sdt'], substr($row['NgaySinh'],0,10));
+        $nv->maNhanVien = (int)$row['ID'];
+        $nv->tenDangNhap = isset($row['TenDangNhap']) ? $row['TenDangNhap'] : '';
+        // schema.sql gốc dùng QuanLy/ThuNgan/ThuKho; ánh xạ vào nhóm quyền của module.
+        $nv->vaiTro = (isset($row['VaiTro']) &&
+            ($row['VaiTro'] === 'QuanLy' || $row['VaiTro'] === 'ChuDoanhNghiep'))
+            ? self::VAI_TRO_CHU : self::VAI_TRO_NV;
+        $nv->trangThai = $row['TrangThai'];
         return $nv;
     }
 
@@ -70,7 +72,7 @@ class NhanVien
     /**
      * CHINH SUA: mat khau mac dinh la ngay + thang + nam (ddmmyyyy), du 8 chu so.
      * Vi du: 02/11/2005 => "02112005" (giu nguyen so 0 o dau).
-     * CSDL luu MD5 cua chuoi nay de tuong thich chuc nang dang nhap hien tai.
+     * CSDL luu chuoi bam PBKDF2-HMAC-SHA256 voi muoi rieng (PHP 5.2).
      */
     public function getMatKhauNgaySinh()
     {
@@ -100,7 +102,7 @@ class NhanVien
     public function getGioiTinhHienThi()
     {
         if ($this->gioiTinh === 'Nam') { return 'Nam'; }
-        if ($this->gioiTinh === 'Nu')  { return 'Nữ'; }
+        if ($this->gioiTinh === 'Nu' || $this->gioiTinh === 'Nữ')  { return 'Nữ'; }
         return $this->gioiTinh;
     }
 
@@ -135,7 +137,7 @@ class NhanVien
         if (!isset($loi['cccd']) && !preg_match('/^[0-9]{12}$/', $this->cccd)) {
             $loi['cccd'] = 'CCCD không hợp lệ (gồm đúng 12 chữ số).';
         }
-        if (!isset($loi['gioi_tinh']) && $this->gioiTinh !== 'Nam' && $this->gioiTinh !== 'Nu') {
+        if (!isset($loi['gioi_tinh']) && $this->gioiTinh !== 'Nam' && $this->gioiTinh !== 'Nu' && $this->gioiTinh !== 'Nữ') {
             $loi['gioi_tinh'] = 'Giới tính không hợp lệ.';
         }
         if (!isset($loi['sdt']) && !preg_match('/^0[0-9]{9}$/', $this->sdt)) {
