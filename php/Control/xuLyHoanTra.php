@@ -1,6 +1,6 @@
 <?php
 session_start();
-require_once dirname(__FILE__) . '/HoanTraController.php';
+require_once dirname(__FILE__) . '/hoanTraController.php';
 
 $trangDanhSach = '../../html/GD_XuLyHoanTra.php';
 

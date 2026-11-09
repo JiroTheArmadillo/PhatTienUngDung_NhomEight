@@ -1,0 +1,158 @@
+:root {
+    --xanh-nhat: #2c3e50;
+    --xanh-dam: #1a252f;
+    --xanh-hoat-dong: #34495e;
+    --nen: #f3f6f9;
+    --vien: #e3e8ee;
+    --chu: #2f3b47;
+    --muted: #7f8c8d;
+    --xanh: #3498db;
+    --xanh-la: #27ae60;
+}
+
+body.giao-dien-chung {
+    display: flex;
+    min-height: 100vh;
+    color: #333;
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--nen);
+}
+
+body.giao-dien-chung .sidebar {
+    width: 260px;
+    min-height: 100vh;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--xanh-nhat);
+    color: #fff;
+}
+
+body.giao-dien-chung .sidebar .logo {
+    min-height: 64px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--xanh-dam);
+    color: #fff;
+    font-size: 20px;
+    font-weight: 700;
+    text-align: center;
+}
+
+body.giao-dien-chung .sidebar a,
+body.giao-dien-chung .sidebar .side-disabled {
+    display: block;
+    padding: 15px 20px;
+    color: #bdc3c7;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+body.giao-dien-chung .sidebar a:hover,
+body.giao-dien-chung .sidebar a.active {
+    background: var(--xanh-hoat-dong);
+    color: #fff;
+}
+
+body.giao-dien-chung .sidebar .side-disabled {
+    opacity: .65;
+}
+
+body.giao-dien-chung .sidebar > form[action="logout.php"],
+body.giao-dien-chung .sidebar > a[href="logout.php"] {
+    margin-top: auto;
+}
+
+body.giao-dien-chung .sidebar > a[href="logout.php"] {
+    color: #e74c3c;
+}
+
+body.giao-dien-chung .sidebar > form[action="logout.php"] button {
+    display: block;
+    width: 100%;
+    min-height: 48px;
+    padding: 15px 20px;
+    border: 0;
+    background: transparent;
+    color: #ffb4a8;
+    text-align: left;
+    font: inherit;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+body.giao-dien-chung .sidebar > form[action="logout.php"] button:hover,
+body.giao-dien-chung .sidebar > form[action="logout.php"] button:focus {
+    background: var(--xanh-hoat-dong);
+}
+
+body.giao-dien-chung .main-content,
+body.giao-dien-chung .main {
+    min-width: 0;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+body.giao-dien-chung .main-content {
+    overflow-y: auto;
+}
+
+body.giao-dien-chung .main {
+    padding: 20px;
+}
+
+body.giao-dien-chung .header {
+    min-height: 64px;
+    padding: 15px 30px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    border-bottom: 1px solid #e0e0e0;
+    background: #fff;
+}
+
+body.giao-dien-chung .header .user-info {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--xanh-nhat);
+}
+
+body.giao-dien-chung .content {
+    padding: 25px 30px;
+}
+
+@media (max-width: 840px) {
+    body.giao-dien-chung {
+        display: block;
+    }
+
+    body.giao-dien-chung .sidebar {
+        width: 100%;
+        min-height: auto;
+    }
+
+    body.giao-dien-chung .main-content,
+    body.giao-dien-chung .main {
+        width: 100%;
+    }
+
+    body.giao-dien-chung .sidebar .logo {
+        justify-content: flex-start;
+    }
+
+    body.giao-dien-chung .sidebar a,
+    body.giao-dien-chung .sidebar .side-disabled {
+        padding: 11px 18px;
+    }
+
+    body.giao-dien-chung .header {
+        justify-content: flex-start;
+    }
+
+    body.giao-dien-chung .content {
+        padding: 20px 18px;
+    }
+}

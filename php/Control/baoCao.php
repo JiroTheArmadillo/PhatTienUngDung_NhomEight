@@ -1,15 +1,11 @@
 <?php
-require_once dirname(__FILE__) . '/config.php';
+require_once dirname(__FILE__) . '/../../db.php';
 
 class BaoCao {
     private $db;
 
     public function __construct() {
-        $this->db = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-        if (mysqli_connect_errno()) {
-            throw new Exception('Khong the ket noi MySQL. Kiem tra backend/config.php va WampServer.');
-        }
-        $this->db->query('SET NAMES utf8');
+        $this->db = eightmart_mysqli_connection();
     }
 
     private function rows($sql) {
@@ -60,10 +56,6 @@ class BaoCao {
         $list = $this->rows('SELECT ma_ca, ngay_gio_bat_dau AS bat_dau, ngay_gio_ket_thuc AS ket_thuc, trang_thai, ma_nhan_vien AS ma_nv_mo_ca FROM ca_lam_viec WHERE ma_ca = ' . $id . ' LIMIT 1');
         if (count($list) === 0) return null;
         return array('thong_tin' => $list[0], 'thong_ke' => $this->thongKe('ma_ca', $id));
-    }
-
-    public function __destruct() {
-        if ($this->db) $this->db->close();
     }
 }
 ?>

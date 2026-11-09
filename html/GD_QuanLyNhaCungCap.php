@@ -1,7 +1,7 @@
 <?php
 require_once dirname(__FILE__) . '/../php/XacThuc.php';
 $nguoiDungDangNhap = XacThuc::yeuCauDangNhap();
-require_once dirname(__FILE__) . '/../php/Control/NhaCungCapController.php';
+require_once dirname(__FILE__) . '/../php/Control/nhaCungCapController.php';
 $controller = new NhaCungCapController();
 $vm = $controller->xuLy();
 $self = basename($_SERVER['SCRIPT_NAME']);
@@ -16,15 +16,6 @@ function trangThaiNcc($status) { return $status === 'HoatDong' ? 'Hoạt động
     <title>Quản lý nhà cung cấp - EIGHT STORE</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { display: flex; min-height: 100vh; color: #333; font-family: Arial, sans-serif; }
-        .sidebar { width: 260px; flex-shrink: 0; background: #2c3e50; color: #fff; display: flex; flex-direction: column; }
-        .sidebar .logo { padding: 20px; font-size: 20px; font-weight: bold; background: #1a252f; text-align: center; }
-        .sidebar a { padding: 15px 20px; color: #bdc3c7; text-decoration: none; font-size: 14px; }
-        .sidebar a:hover, .sidebar a.active { background: #34495e; color: #fff; }
-        .sidebar form { margin-top: auto; }
-        .main-content { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-        .header { background: #fff; padding: 15px 30px; border-bottom: 1px solid #e0e0e0; text-align: right; }
-        .content { padding: 25px 30px; }
         h2 { margin-bottom: 15px; color: #2c3e50; }
         .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 600; text-decoration: none; display: inline-block; }
         .btn-primary { background: #3498db; color: white; }
@@ -50,11 +41,11 @@ function trangThaiNcc($status) { return $status === 'HoatDong' ? 'Hoạt động
         .modal-overlay.is-open { display: flex; }
         .modal-box { width: 100%; max-width: 430px; border-radius: 9px; padding: 24px; background: #fff; }
         .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
-        @media (max-width: 840px) { body { display: block; } .sidebar { width: 100%; } .main-content { width: 100%; } .table-wrap { overflow-x: auto; } table { min-width: 850px; } }
+        @media (max-width: 840px) { .table-wrap { overflow-x: auto; } table { min-width: 850px; } }
     </style>
-    <link rel="stylesheet" href="giao-dien.css">
+    <link rel="stylesheet" href="khung-giao-dien.css">
 </head>
-<body>
+<body class="giao-dien-chung">
 <div class="sidebar">
     <div class="logo">EIGHT STORE</div>
     
@@ -66,10 +57,10 @@ function trangThaiNcc($status) { return $status === 'HoatDong' ? 'Hoạt động
         <a href="GD_DuyetPhieuDatHang.php">Duyệt phiếu đặt hàng</a>
         <a href="GD_XuLyHoanTra.php">Xử lý hoàn trả</a>       
         <a href="GD_BaoCao.php" class="active" aria-current="page">Báo cáo</a>
-        <a href="logout.php" style="margin-top: auto; color: #e74c3c;">Đăng xuất</a>
+        <a href="logout.php">Đăng xuất</a>
         <form method="post" action="logout.php">
         <input type="hidden" name="csrf_token" value="<?php echo h(XacThuc::layTokenDangXuat()); ?>">
-        <button type="submit" style="width:100%;padding:15px 20px;border:0;background:transparent;color:#ffb4a8;text-align:left;font:inherit;cursor:pointer">Đăng xuất</button>
+        <button type="submit">Đăng xuất</button>
     </form>
 </div>
 <div class="main-content">
@@ -111,4 +102,3 @@ function trangThaiNcc($status) { return $status === 'HoatDong' ? 'Hoạt động
 </script>
 </body>
 </html>
-

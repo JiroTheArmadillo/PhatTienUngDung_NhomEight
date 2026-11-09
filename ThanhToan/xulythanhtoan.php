@@ -6,7 +6,9 @@
 //   POST action=xac_nhan                -> xac nhan da nhan tien chuyen khoan
 //   POST action=huy                     -> huy don dang cho chuyen khoan
 session_start();
-require_once dirname(__FILE__) . '/clsketnoi.php';
+require_once dirname(__FILE__) . '/../db.php';
+require_once dirname(__FILE__) . '/helpers.php';
+$conn = eightmart_mysqli_connection();
 header('Content-Type: application/json; charset=utf-8');
 
 // Thoi han cua ma QR chuyen khoan (giay). 300 giay = 5 phut.

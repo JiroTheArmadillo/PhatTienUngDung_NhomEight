@@ -1,6 +1,7 @@
 <?php
 // Trang in hoa don: hoadon.php?id=1
-require_once dirname(__FILE__) . '/clsketnoi.php';
+require_once dirname(__FILE__) . '/../db.php';
+$conn = eightmart_mysqli_connection();
 
 $ma_hoa_don = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
@@ -37,6 +38,7 @@ $ten_trang_thai = array('ChoThanhToan' => 'Chờ thanh toán', 'DaThanhToan' => 
 <head>
     <meta charset="UTF-8">
     <title>Hóa Đơn HD<?php echo $ma_hoa_don; ?></title>
+    <link rel="stylesheet" href="../html/khung-giao-dien.css">
     <style>
         body { font-family: Arial, sans-serif; width: 380px; margin: 20px auto; color: #222; font-size: 14px; }
         h2 { text-align: center; margin-bottom: 4px; }

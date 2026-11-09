@@ -12,6 +12,7 @@ class TaiKhoanRep
     /** Chuẩn hóa các vai trò cũ trong SQL mẫu thành 2 cấp quyền của ứng dụng. */
     public static function chuanHoaVaiTro($vaiTro)
     {
+
         if ($vaiTro === 'ChuDoanhNghiep' || $vaiTro === 'QuanLy') {
             return 'ChuDoanhNghiep';
         }
@@ -22,6 +23,7 @@ class TaiKhoanRep
     /** Dùng khi kiểm tra phiên: quyền và trạng thái được đọc từ DB mỗi request. */
     public function layNguoiDungTheoTaiKhoan($taiKhoanID)
     {
+
         $st = $this->db->prepare('SELECT tk.ID AS ma_tai_khoan, '
             . 'tk.NhanVienID AS ma_nhan_vien, tk.TenDangNhap AS ten_dang_nhap, '
             . 'tk.VaiTro AS vai_tro, tk.TrangThai AS trang_thai, '
@@ -30,6 +32,7 @@ class TaiKhoanRep
         $st->execute(array((int)$taiKhoanID));
         $r = $st->fetch(PDO::FETCH_ASSOC);
         if (!$r || $r['trang_thai'] !== 'HoatDong' || $r['trang_thai_nhan_vien'] !== 'HoatDong') {
+
             return null;
         }
         return array('ma_tai_khoan' => (int)$r['ma_tai_khoan'],

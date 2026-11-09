@@ -3,7 +3,7 @@
 require_once dirname(__FILE__) . '/../php/XacThuc.php';
 $nguoiDungDangNhap = XacThuc::yeuCauDangNhap();
 // Nạp lớp điều khiển, xử lý Thêm / Sửa / Xóa / Xem danh sách nhân viên
-require_once dirname(__FILE__) . '/../php/Control/NhanVienController.php';
+require_once dirname(__FILE__) . '/../php/Control/nhanVienController.php';
 $controller = new NhanVienController();
 $vm = $controller->xuLy();
 $laChu = $nguoiDungDangNhap['vai_tro'] === 'ChuDoanhNghiep';
@@ -19,75 +19,9 @@ function h($v) { return htmlspecialchars($v, ENT_QUOTES, 'UTF-8'); }
         <title>Hệ Thống Quản Lý Cửa Hàng</title>
         <!-- <link rel="stylesheet" href="css/style.css"> -->
             <style>
-            
     * {
-        
         margin: 0;
         padding: 0;
-        
-    }
-
-    body {
-        display: flex;
-        height: 100vh;
-        color: #333;
-    }
-
-    .sidebar {
-        width: 30%;
-        background-color: #2c3e50;
-        color: white;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .sidebar .logo {
-        padding: 20px;
-        font-size: 20px;
-        font-weight: bold;
-        background-color: #1a252f;
-        text-align: center;
-        
-    }
-
-    .sidebar a {
-        padding: 15px 20px;
-        color: #bdc3c7;
-        text-decoration: none;
-        font-size: 14px;
-    }
-
-    .sidebar a:hover, 
-    .sidebar a.active {
-        background-color: #34495e;
-        color: white;
-        
-    }
-
-    .main-content {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        overflow-y: auto;
-    }
-
-    /* Header nằm trên cùng */
-    .header {
-        background: white;
-        padding: 15px 30px;
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        border-bottom: 1px solid #e0e0e0;
-    }
-
-    .header .user-info {
-        font-size: 14px;
-    }
-
-    /* Content bên trong */
-    .content {
-        padding: 25px 30px;
     }
 
     .content h2 {
@@ -173,8 +107,11 @@ function h($v) { return htmlspecialchars($v, ENT_QUOTES, 'UTF-8'); }
     .form-group input.has-error:focus, .form-group select.has-error:focus { outline-color: #e74c3c; }
 
      </style>
-    </head>
-    <body>
+
+    <link rel="stylesheet" href="khung-giao-dien.css">
+</head>
+<body class="giao-dien-chung">
+
 
         <!-- Sidebar Menu -->
         <div class="sidebar">
@@ -183,7 +120,7 @@ function h($v) { return htmlspecialchars($v, ENT_QUOTES, 'UTF-8'); }
              <a href="GD_TrangChu.php">Trang chủ</a>
              <a href="GD_QuanLyNhanVien.php" class="active" aria-current="page"><?php echo $laChu ? 'Quản lý nhân viên' : 'Thông tin cá nhân'; ?></a>
         <!-- UC02: nút Đăng xuất gửi POST, kết thúc phiên và quay về đăng nhập. -->
-        <form method="post" action="logout.php" style="margin-top: auto; margin-bottom: 0;">
+        <form method="post" action="logout.php">
             <input type="hidden" name="csrf_token" value="<?php echo h(XacThuc::layTokenDangXuat()); ?>">
             <button type="submit" style="display: block; width: 100%; padding: 15px 20px;
                 border: none; background: transparent; color: #ffb4a8; text-align: left;

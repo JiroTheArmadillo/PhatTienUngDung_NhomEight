@@ -1,6 +1,6 @@
 <?php
 // BỔ SUNG: trang đăng nhập sử dụng dữ liệu trong `Tai Khoan`.
-require_once dirname(__FILE__) . '/../php/Control/DangNhapController.php';
+require_once dirname(__FILE__) . '/../php/Control/dangNhapController.php';
 $vm = new DangNhapController();
 $login = $vm->xuLy();
 function hDangNhap($value) { return htmlspecialchars($value, ENT_QUOTES, 'UTF-8'); }
@@ -11,6 +11,7 @@ function hDangNhap($value) { return htmlspecialchars($value, ENT_QUOTES, 'UTF-8'
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Đăng nhập | EIGHT Mart</title>
+    <link rel="stylesheet" href="khung-giao-dien.css">
     <style>
         * { box-sizing: border-box; }
         body { margin: 0; min-height: 100vh; display: flex; align-items: center;

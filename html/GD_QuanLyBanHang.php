@@ -1,7 +1,9 @@
 <?php
 // Trang quản lý bán hàng đổ trực tiếp danh sách sản phẩm từ CSDL, giống trang quản lý nhân viên.
 session_start();
-require_once dirname(__FILE__) . '/../ThanhToan/clsketnoi.php';
+require_once dirname(__FILE__) . '/../db.php';
+require_once dirname(__FILE__) . '/../ThanhToan/helpers.php';
+$conn = eightmart_mysqli_connection();
 
 function hSanPham($giaTri) { return htmlspecialchars((string) $giaTri, ENT_QUOTES, 'UTF-8'); }
 
@@ -28,12 +30,6 @@ if (!$resultSanPham) {
     <title>Bán hàng - EIGHT STORE</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { display: flex; min-height: 100vh; font-family: Arial, sans-serif; color: #333; background: #f4f6f8; }
-        .sidebar { width: 230px; flex-shrink: 0; background: #2c3e50; color: white; display: flex; flex-direction: column; }
-        .logo { padding: 20px; text-align: center; font-weight: bold; background: #1a252f; }
-        .sidebar a { padding: 15px 20px; color: #bdc3c7; text-decoration: none; }
-        .sidebar a:hover, .sidebar a.active { background: #34495e; color: white; }
-        .main { flex: 1; padding: 20px; }
         h2 { text-align: center; margin-bottom: 20px; }
         .nhap-sp { display: flex; gap: 10px; padding: 15px; margin-bottom: 15px; background: white; border-radius: 6px; }
         .khung-danh-sach { margin-bottom: 15px; padding: 15px; background: white; border-radius: 6px; }
@@ -56,9 +52,9 @@ if (!$resultSanPham) {
         .qr { max-width: 220px; margin: 12px 0; }
         .thongtin { padding: 10px; background: #f2f4f5; border-radius: 5px; text-align: left; line-height: 1.7; }
     </style>
-    <link rel="stylesheet" href="giao-dien.css">
+    <link rel="stylesheet" href="khung-giao-dien.css">
 </head>
-<body>
+<body class="giao-dien-chung">
     <div class="sidebar">
         <div class="logo">EIGHT STORE</div>
       <a href="GD_TrangChu.php">dashboard</a>
@@ -69,7 +65,7 @@ if (!$resultSanPham) {
         <a href="GD_DuyetPhieuDatHang.php">Duyệt phiếu đặt hàng</a>
         <a href="GD_XuLyHoanTra.php">Xử lý hoàn trả</a>       
         <a href="GD_BaoCao.php" class="active" aria-current="page">Báo cáo</a>
-        <a href="logout.php" style="margin-top: auto; color: #e74c3c;">Đăng xuất</a>
+        <a href="logout.php">Đăng xuất</a>
     </div>
 
     <div class="main">
