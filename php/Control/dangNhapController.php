@@ -36,7 +36,7 @@ class DangNhapController
 
         header('Cache-Control: no-store, no-cache, must-revalidate');
         if (!isset($_SESSION['eightmart_csrf_login'])) {
-            $_SESSION['eightmart_csrf_login'] = sha1(uniqid(mt_rand(), true));
+            $_SESSION['eightmart_csrf_login'] = BaoMat::taoNgauNhien(16);
         }
 
         $vm = array('loi' => '', 'errors' => array(), 'ten_dang_nhap' => '',
@@ -50,7 +50,7 @@ class DangNhapController
         $token = isset($_POST['csrf_token']) ? (string) $_POST['csrf_token'] : '';
         $vm['ten_dang_nhap'] = $username;
 
-        if ($token === '' || $token !== $_SESSION['eightmart_csrf_login']) {
+        if ($token === '' || !BaoMat::bangNhau($token, $_SESSION['eightmart_csrf_login'])) {
             $vm['loi'] = 'Phiên biểu mẫu không hợp lệ. Vui lòng tải lại trang.';
             return $vm;
         }
@@ -78,7 +78,7 @@ class DangNhapController
             }
         } catch (Exception $e) {
             error_log('[DangNhap] ' . $e->getMessage());
-            $vm['loi'] = 'Không thể kết nối cơ sở dữ liệu. Kiểm tra MySQL và cấu hình kết nối.';
+            $vm['loi'] = 'Không thể xác thực tài khoản. Kiểm tra kết nối DB hoặc nhật ký lỗi PHP.';
             return $vm;
         }
 
