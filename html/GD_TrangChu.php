@@ -104,6 +104,7 @@ $menuTrangChu = array(
                 <span class="side-disabled" title="Chức năng chưa khả dụng"><?php echo hTrangChu($muc['ten']); ?></span>
             <?php endif; ?>
         <?php endforeach; ?>
+        <a href="GD_BaoCao.php">Báo cáo doanh thu</a>
         <!-- Đăng xuất giữ nguyên cơ chế POST + CSRF token của dự án. -->
         <form class="logout" method="post" action="logout.php">
             <input type="hidden" name="csrf_token" value="<?php echo hTrangChu(XacThuc::layTokenDangXuat()); ?>">
