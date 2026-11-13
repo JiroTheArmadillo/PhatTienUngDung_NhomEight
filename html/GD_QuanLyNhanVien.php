@@ -119,6 +119,8 @@ function h($v) { return htmlspecialchars($v, ENT_QUOTES, 'UTF-8'); }
              <div class="logo">EIGHT STORE</div>
              <a href="GD_TrangChu.php">Trang chủ</a>
              <a href="GD_QuanLyNhanVien.php" class="active" aria-current="page"><?php echo $laChu ? 'Quản lý nhân viên' : 'Thông tin cá nhân'; ?></a>
+             
+             <a style="pointer-events: none;" href="GD_QuanLyNhaCungCap.php">Quản lý nhà cung cấp</a>
         <!-- UC02: nút Đăng xuất gửi POST, kết thúc phiên và quay về đăng nhập. -->
         <form method="post" action="logout.php">
             <input type="hidden" name="csrf_token" value="<?php echo h(XacThuc::layTokenDangXuat()); ?>">

@@ -1,4 +1,4 @@
-<?php
+    <?php
 // php/Control/lapPhieuDatHangControl.php
 require_once dirname(__FILE__) . '/../Repository/PhieuDatHangRepository.php';
 require_once dirname(__FILE__) . '/../Entity/PhieuDeNghiDatHang.php';
@@ -13,6 +13,10 @@ class LapPhieuDatHangControl {
 
     public function layDanhSachNCC() {
         return $this->repo->getDanhSachNhaCungCap();
+    }
+
+    public function layDanhSachNCCTheoSanPham($maSanPham) {
+        return $this->repo->getDanhSachNhaCungCapTheoSanPham($maSanPham);
     }
 
     public function layDanhSachSanPhamCanNhap() {

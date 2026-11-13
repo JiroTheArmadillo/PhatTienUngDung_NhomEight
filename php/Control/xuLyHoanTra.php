@@ -1,6 +1,7 @@
 <?php
 session_start();
 require_once dirname(__FILE__) . '/hoanTraController.php';
+require_once dirname(__FILE__) . '/../XacThuc.php';
 
 $trangDanhSach = '../../html/GD_XuLyHoanTra.php';
 
@@ -13,8 +14,17 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $id     = isset($_POST['id']) ? (int)$_POST['id'] : 0;
 $action = isset($_POST['action']) ? $_POST['action'] : '';
 
-// Người xử lý: lấy từ session nếu đã đăng nhập, chưa có thì để NULL (cột cho phép NULL)
-$maNguoiXuLy = isset($_SESSION['ma_nhan_vien']) ? (int)$_SESSION['ma_nhan_vien'] : null;
+$nguoiDung = XacThuc::layNguoiDung();
+if ($nguoiDung === null) {
+    header('Location: ../../html/GD_DangNhap.php');
+    exit;
+}
+$maNguoiXuLy = isset($nguoiDung['ma_nhan_vien']) ? (int)$nguoiDung['ma_nhan_vien'] : 0;
+if ($maNguoiXuLy <= 0) {
+    $_SESSION['flash'] = array('ok' => false, 'message' => 'Không xác định được nhân viên đang đăng nhập.');
+    header('Location: ' . $trangDanhSach);
+    exit;
+}
 
 $controller = new HoanTraController();
 

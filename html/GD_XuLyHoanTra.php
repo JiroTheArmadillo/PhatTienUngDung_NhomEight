@@ -1,7 +1,9 @@
 <?php
 session_start();
 require_once dirname(__FILE__) . '/../php/Control/hoanTraController.php';
+require_once dirname(__FILE__) . '/../php/XacThuc.php';
  
+$nguoiDung = XacThuc::yeuCauDangNhap();
 $controller = new HoanTraController();
 $danhSach = array();
 $loiTaiDuLieu = null;
@@ -17,7 +19,7 @@ try {
 $flash = isset($_SESSION['flash']) ? $_SESSION['flash'] : null;
 unset($_SESSION['flash']);
  
-$tenNguoiDung = isset($_SESSION['ten']) ? $_SESSION['ten'] : 'Vinh';
+$tenNguoiDung = isset($nguoiDung['ho_ten']) ? $nguoiDung['ho_ten'] : '';
  
 function e($s)
 {
@@ -171,11 +173,11 @@ function hienTrangThai($tt)
          <div class="logo">EIGHT STORE</div>
          <a href="GD_TrangChu.php">dashboard</a>
          <a href="GD_QuanLyBanHang.php">Quản lý Bán Hàng</a>
-        <a href="GD_QuanLyNhanVien.php" class="active" aria-current="page">Quản lý nhân viên</a>
-        <a href="GD_QuanLyNhaCungCap.php">Quản lý nhà cung cấp</a>
+        <a href="GD_QuanLyNhanVien.php" <?php $nguoiDung['vai_tro'] !=='QuanLy' ? 'style:"pointer-events:none;"' : '' ?>>quản lý nhân viên</a>
+        <a href="GD_QuanLyNhaCungCap.php">quản lý nhà cung cấp</a>
         <a href="GD_LapPhieuDatHang.php">Lập phiếu đặt hàng</a>
-        <a href="GD_DuyetPhieuDatHang.php">Duyệt phiếu đặt hàng</a>
-        <a href="GD_XuLyHoanTra.php">Xử lý hoàn trả</a>       
+        <a href="GD_DuyetPhieuDatHang.php" <?php $nguoiDung['vai_tro'] !=='QuanLy' ? 'style:"pointer-events:none;"' : '' ?>>Duyệt phiếu đặt hàng</a>
+        <a href="GD_XuLyHoanTra.php" <?php $nguoiDung['vai_tro'] !=='QuanLy' ? 'style:"pointer-events:none;"' : '' ?>>Xử lý hoàn trả</a>       
         <a href="GD_BaoCao.php" class="active" aria-current="page">Báo cáo</a>
         <a href="logout.php">Đăng xuất</a>
     </div>
@@ -183,7 +185,7 @@ function hienTrangThai($tt)
     <!-- Main Content -->
     <div class="main-content">
         <div class="header">
-            <div class="user-info">Chào mừng, <b>Vinh</b></div>
+            <div class="user-info">Chào mừng, <b><?php echo e($tenNguoiDung); ?></b></div>
         </div>
 
         <div class="content">

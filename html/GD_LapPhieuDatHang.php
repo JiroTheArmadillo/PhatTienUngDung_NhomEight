@@ -14,25 +14,11 @@ if (!isset($conn)) {
 }
 
 // Kích hoạt session và kiểm tra xác thực từ nhánh Thai
-XacThuc::batDau();
-$nguoiDung = XacThuc::layNguoiDung();
-
-// Nếu chưa đăng nhập -> chuyển hướng về trang Đăng nhập
-if ($nguoiDung === null) {
-    header("Location: GD_DangNhap.php");
-    exit();
-}
-
-// Lấy Mã và Tên nhân viên động từ Session đăng nhập
-$ma_nhan_vien = 2; // Mặc định fallback
-$ten_nhan_vien = 'Nhân viên';
-
-if (is_array($nguoiDung)) {
-    $ma_nhan_vien = isset($nguoiDung['ma_nhan_vien']) ? $nguoiDung['ma_nhan_vien'] : (isset($nguoiDung['ma_nv']) ? $nguoiDung['ma_nv'] : 2);
-    $ten_nhan_vien = isset($nguoiDung['ho_ten']) ? $nguoiDung['ho_ten'] : (isset($nguoiDung['ten_nv']) ? $nguoiDung['ten_nv'] : (isset($nguoiDung['ten_dang_nhap']) ? $nguoiDung['ten_dang_nhap'] : 'Nhân viên'));
-} else if (is_object($nguoiDung)) {
-    $ma_nhan_vien = isset($nguoiDung->ma_nhan_vien) ? $nguoiDung->ma_nhan_vien : (isset($nguoiDung->ma_nv) ? $nguoiDung->ma_nv : 2);
-    $ten_nhan_vien = isset($nguoiDung->ho_ten) ? $nguoiDung->ho_ten : (isset($nguoiDung->ten_nv) ? $nguoiDung->ten_nv : (isset($nguoiDung->ten_dang_nhap) ? $nguoiDung->ten_dang_nhap : 'Nhân viên'));
+$nguoiDung = XacThuc::yeuCauDangNhap();
+$ma_nhan_vien = isset($nguoiDung['ma_nhan_vien']) ? (int)$nguoiDung['ma_nhan_vien'] : 0;
+$ten_nhan_vien = isset($nguoiDung['ho_ten']) ? $nguoiDung['ho_ten'] : '';
+if ($ma_nhan_vien <= 0) {
+    throw new Exception('Không xác định được nhân viên đang đăng nhập.');
 }
 
 $control = new LapPhieuDatHangControl($conn);
@@ -80,7 +66,6 @@ if (isset($_GET['success']) && $_GET['success'] == 1 && !empty($_GET['phieu_ids'
 }
 
 // 4. LẤY DỮ LIỆU BẢNG SẢN PHẨM & NCC
-$list_ncc  = $control->layDanhSachNCC();
 $result_sp = $control->layDanhSachSanPhamCanNhap();
 ?>
 <!DOCTYPE html>
@@ -110,8 +95,8 @@ $result_sp = $control->layDanhSachSanPhamCanNhap();
         <div class="logo">EIGHT STORE</div>
          <a href="GD_TrangChu.php">dashboard</a>
          <a href="GD_QuanLyBanHang.php">Quản lý Bán Hàng</a>
-        <a href="GD_QuanLyNhanVien.php" class="active" aria-current="page">Quản lý nhân viên</a>
-        <a href="GD_QuanLyNhaCungCap.php">Quản lý nhà cung cấp</a>
+        <a href="GD_QuanLyNhanVien.php" class="active" aria-current="page">quản lý nhân viên</a>
+        <a href="GD_QuanLyNhaCungCap.php">quản lý nhà cung cấp</a>
         <a href="GD_LapPhieuDatHang.php">Lập phiếu đặt hàng</a>
         <a href="GD_DuyetPhieuDatHang.php">Duyệt phiếu đặt hàng</a>
         <a href="GD_XuLyHoanTra.php">Xử lý hoàn trả</a>       
@@ -204,6 +189,7 @@ $result_sp = $control->layDanhSachSanPhamCanNhap();
                             <?php while ($sp = $result_sp->fetch_assoc()): 
                                 $sp_id = $sp['ma_san_pham'];
                                 $don_gia_dap = $sp['gia_ban'] * 0.7;
+                                $list_ncc = $control->layDanhSachNCCTheoSanPham($sp_id);
                             ?>
                                 <tr>
                                     <td style="text-align: center;">

@@ -1,5 +1,5 @@
 <?php
-/** Entity NhaCungCap - ánh xạ bảng nha_cung_cap trong database eightmart. */
+/** Entity NhaCungCap - ánh xạ bảng NhaCungCap trong schema.sql. */
 class NhaCungCap
 {
     const TT_HOAT_DONG = 'HoatDong';

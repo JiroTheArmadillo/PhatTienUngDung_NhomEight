@@ -1,7 +1,7 @@
 <?php
 /**
  * Repository: truy cập CSDL cho chức năng "Xử lý yêu cầu hoàn trả".
- * Bảng sử dụng: phieu_yeu_cau_tra_hang, chi_tiet_tra_hang.
+ * Bảng sử dụng: PhieuYeuCauTraHang, ChiTietPhieuYeuCauTraHang.
  * Tương thích PHP 5.2.6 + MySQL 5.0 (MySQLi).
  */
 require_once dirname(__FILE__) . '/../../db.php';
@@ -22,13 +22,14 @@ class HoanTraRepository
     /** Danh sách yêu cầu: dòng có trạng thái $trangThaiCho xếp trước, rồi mới nhất xếp trước. */
     public function layDanhSach($trangThaiCho)
     {
-        $sql = "SELECT y.ma_yeu_cau, y.ma_hoa_don, y.ly_do_hoan_tra, y.ly_do_tu_choi,
-                       y.trang_thai, y.ngay_tao,
-                       (SELECT IFNULL(SUM(c.so_luong), 0)
-                          FROM chi_tiet_tra_hang c
-                         WHERE c.ma_yeu_cau = y.ma_yeu_cau) AS tong_so_luong
-                  FROM phieu_yeu_cau_tra_hang y
-                 ORDER BY (y.trang_thai = ?) DESC, y.ngay_tao DESC";
+        $sql = "SELECT y.ID AS ma_yeu_cau, y.HoaDonID AS ma_hoa_don,
+                       y.LyDoHoanTra AS ly_do_hoan_tra, y.LyDoTuChoi AS ly_do_tu_choi,
+                       y.TrangThai AS trang_thai, y.NgayTao AS ngay_tao,
+                       (SELECT IFNULL(SUM(c.SoLuong), 0)
+                          FROM ChiTietPhieuYeuCauTraHang c
+                         WHERE c.PhieuYeuCauTraHangID = y.ID) AS tong_so_luong
+                  FROM PhieuYeuCauTraHang y
+                 ORDER BY (y.TrangThai = ?) DESC, y.NgayTao DESC";
         $stmt = eightmart_mysqli_execute($sql, array($trangThaiCho));
         return eightmart_mysqli_fetch_all_assoc($stmt);
     }
@@ -36,7 +37,7 @@ class HoanTraRepository
     /** Trạng thái hiện tại của yêu cầu, null nếu không tồn tại. */
     public function layTrangThai($maYeuCau)
     {
-        $stmt = eightmart_mysqli_execute('SELECT trang_thai FROM phieu_yeu_cau_tra_hang WHERE ma_yeu_cau = ?', array($maYeuCau));
+        $stmt = eightmart_mysqli_execute('SELECT TrangThai AS trang_thai FROM PhieuYeuCauTraHang WHERE ID = ?', array((int)$maYeuCau));
         $row = eightmart_mysqli_fetch_one_assoc($stmt);
         return $row ? $row['trang_thai'] : null;
     }
@@ -48,10 +49,10 @@ class HoanTraRepository
     public function capNhatTrangThai($maYeuCau, $trangThaiMoi, $lyDoTuChoi, $maNguoiXuLy, $trangThaiHienTai)
     {
         $stmt = eightmart_mysqli_execute(
-            "UPDATE phieu_yeu_cau_tra_hang
-                SET trang_thai = ?, ly_do_tu_choi = ?, ma_nguoi_xu_ly = ?, ngay_xu_ly = NOW()
-              WHERE ma_yeu_cau = ? AND trang_thai = ?",
-            array($trangThaiMoi, $lyDoTuChoi, $maNguoiXuLy, $maYeuCau, $trangThaiHienTai)
+            "UPDATE PhieuYeuCauTraHang
+                SET TrangThai = ?, LyDoTuChoi = ?, NhanVienXuLyID = ?, NgayXuLy = NOW()
+              WHERE ID = ? AND TrangThai = ?",
+            array($trangThaiMoi, $lyDoTuChoi, $maNguoiXuLy, (int)$maYeuCau, $trangThaiHienTai)
         );
         return eightmart_mysqli_affected_rows($stmt) > 0;
     }

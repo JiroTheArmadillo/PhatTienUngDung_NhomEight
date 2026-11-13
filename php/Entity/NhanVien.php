@@ -1,6 +1,6 @@
 <?php
 /**
- * Entity NhanVien - ánh xạ bảng `NhanVien` trong schema.sql riêng.
+ * Entity NhanVien - ánh xạ bảng `NhanVien` trong schema.sql.
  * Tương thích PHP 5.2.
  */
 class NhanVien

@@ -1,13 +1,13 @@
 <?php
-/** Truy cập bảng TaiKhoan của schema.sql RIÊNG (không đổi cấu trúc SQL). */
-require_once dirname(__FILE__) . '/KetNoiDB.php';
+/** Truy cập bảng TaiKhoan trong schema.sql bằng kết nối MySQLi dùng chung. */
+require_once dirname(__FILE__) . '/../../db.php';
 require_once dirname(__FILE__) . '/../BaoMat.php';
 
 class TaiKhoanRep
 {
     private $db;
 
-    public function __construct() { $this->db = KetNoiDB::layKetNoi(); }
+    public function __construct() { $this->db = eightmart_mysqli_connection(); }
 
     /** Chuẩn hóa các vai trò cũ trong SQL mẫu thành 2 cấp quyền của ứng dụng. */
     public static function chuanHoaVaiTro($vaiTro)
@@ -24,13 +24,13 @@ class TaiKhoanRep
     public function layNguoiDungTheoTaiKhoan($taiKhoanID)
     {
 
-        $st = $this->db->prepare('SELECT tk.ID AS ma_tai_khoan, '
+        $st = eightmart_mysqli_execute('SELECT tk.ID AS ma_tai_khoan, '
             . 'tk.NhanVienID AS ma_nhan_vien, tk.TenDangNhap AS ten_dang_nhap, '
             . 'tk.VaiTro AS vai_tro, tk.TrangThai AS trang_thai, '
             . 'nv.Ten AS ho_ten, nv.Cccd AS cccd, nv.TrangThai AS trang_thai_nhan_vien '
-            . 'FROM TaiKhoan tk INNER JOIN NhanVien nv ON nv.ID=tk.NhanVienID WHERE tk.ID=?');
-        $st->execute(array((int)$taiKhoanID));
-        $r = $st->fetch(PDO::FETCH_ASSOC);
+            . 'FROM TaiKhoan tk INNER JOIN NhanVien nv ON nv.ID=tk.NhanVienID WHERE tk.ID=?',
+            array((int)$taiKhoanID));
+        $r = eightmart_mysqli_fetch_one_assoc($st);
         if (!$r || $r['trang_thai'] !== 'HoatDong' || $r['trang_thai_nhan_vien'] !== 'HoatDong') {
 
             return null;
@@ -48,15 +48,14 @@ class TaiKhoanRep
         // Tài khoản do chức năng Thêm tạo sẽ có TenDangNhap = CCCD.
         $theoCccd = preg_match('/^[0-9]{12}$/D', $tenDangNhap) === 1;
         $where = $theoCccd ? 'nv.Cccd=?' : 'tk.TenDangNhap=?';
-        $st = $this->db->prepare('SELECT tk.ID AS ma_tai_khoan, '
+        $st = eightmart_mysqli_execute('SELECT tk.ID AS ma_tai_khoan, '
             . 'tk.NhanVienID AS ma_nhan_vien, tk.TenDangNhap AS ten_dang_nhap, '
             . 'tk.MatKhau AS mat_khau, tk.VaiTro AS vai_tro, '
             . 'tk.TrangThai AS trang_thai, nv.Ten AS ho_ten, nv.Cccd AS cccd, '
             . 'nv.TrangThai AS trang_thai_nhan_vien, nv.NgaySinh AS ngay_sinh '
             . 'FROM TaiKhoan tk INNER JOIN NhanVien nv ON nv.ID=tk.NhanVienID '
-            . 'WHERE ' . $where . ' LIMIT 1');
-        $st->execute(array($tenDangNhap));
-        $r = $st->fetch(PDO::FETCH_ASSOC);
+            . 'WHERE ' . $where . ' LIMIT 1', array($tenDangNhap));
+        $r = eightmart_mysqli_fetch_one_assoc($st);
         if (!$r || $r['trang_thai'] !== 'HoatDong' || $r['trang_thai_nhan_vien'] !== 'HoatDong') {
             return null;
         }
@@ -73,11 +72,10 @@ class TaiKhoanRep
                 $hopLe = BaoMat::bangNhau($matKhau, $matKhauBanDau);
             }
             if ($hopLe) {
-                $stCapNhat = $this->db->prepare('UPDATE TaiKhoan SET MatKhau=? WHERE ID=? AND MatKhau=?');
-                $stCapNhat->execute(array(BaoMat::bamMatKhau($matKhau),
-                    (int)$r['ma_tai_khoan'], $daLuu));
+                $stCapNhat = eightmart_mysqli_execute('UPDATE TaiKhoan SET MatKhau=? WHERE ID=? AND MatKhau=?',
+                    array(BaoMat::bamMatKhau($matKhau), (int)$r['ma_tai_khoan'], $daLuu));
                 // Tránh trường hợp mật khẩu bị đổi đồng thời bởi tiến trình khác.
-                if ($stCapNhat->rowCount() !== 1) { return null; }
+                if (eightmart_mysqli_affected_rows($stCapNhat) !== 1) { return null; }
             }
         }
         if (!$hopLe) { return null; }
