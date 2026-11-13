@@ -106,24 +106,6 @@ try {
 </head>
 <body class="giao-dien-chung">
 
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="logo">EIGHT STORE</div>
-        <a href="GD_TrangChu.php">dashboard</a>
-         <a href="GD_QuanLyBanHang.php">Quản lý Bán Hàng</a>
-        <a href="GD_QuanLyNhanVien.php" class="active" aria-current="page">Quản lý nhân viên</a>
-        <a href="GD_QuanLyNhaCungCap.php">Quản lý nhà cung cấp</a>
-        <a href="GD_LapPhieuDatHang.php">Lập phiếu đặt hàng</a>
-        <a href="GD_DuyetPhieuDatHang.php">Duyệt phiếu đặt hàng</a>
-        <a href="GD_XuLyHoanTra.php">Xử lý hoàn trả</a>       
-        <a href="GD_BaoCao.php" class="active" aria-current="page">Báo cáo</a>
-        <form method="post" action="logout.php">
-            <input type="hidden" name="csrf_token" value="<?php echo h(XacThuc::layTokenDangXuat()); ?>">
-            <button type="submit" style="display: block; width: 100%; padding: 15px 20px;
-                border: none; background: transparent; color: #ffb4a8; text-align: left;
-                font: inherit; font-size: 14px; cursor: pointer;">Đăng xuất</button>
-        </form>
-    </div>
 
     <!-- Main Content -->
     <div class="main-content">

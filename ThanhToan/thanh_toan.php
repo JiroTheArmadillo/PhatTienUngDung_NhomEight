@@ -1,7 +1,9 @@
 <?php
 session_start();
 require_once dirname(__FILE__) . '/../db.php';
+require_once dirname(__FILE__) . '/../php/XacThuc.php';
 $conn = eightmart_mysqli_connection();
+$nguoiDung = XacThuc::layNguoiDung();
 
 $message = '';
 $message_type = '';
@@ -9,10 +11,11 @@ $ma_hoa_don = isset($_GET['ma_hoa_don']) ? intval($_GET['ma_hoa_don']) : 0;
 if (isset($_POST['ma_hoa_don'])) {
     $ma_hoa_don = intval($_POST['ma_hoa_don']);
 }
-$ma_nhan_vien = isset($_SESSION['ma_nhan_vien']) ? intval($_SESSION['ma_nhan_vien']) : 0;
+$ma_nhan_vien = $nguoiDung !== null && isset($nguoiDung['ma_nhan_vien'])
+    ? (int)$nguoiDung['ma_nhan_vien'] : 0;
 
 if ($ma_nhan_vien <= 0) {
-    $message = 'Ban can dang nhap tai khoan nhan vien truoc khi thanh toan. Hay gan $_SESSION[\'ma_nhan_vien\'] khi dang nhap thanh cong.';
+    $message = 'Bạn cần đăng nhập tài khoản nhân viên trước khi thanh toán.';
     $message_type = 'error';
 }
 
@@ -24,7 +27,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['xac_nhan_thanh_toan'])
         $message_type = 'error';
     } else {
         // Lay tong tien tu database, khong tin so tien gui tu form.
-        $sql = "SELECT ma_hoa_don, tong_tien, trang_thai FROM don_hang WHERE ma_hoa_don = " . $ma_hoa_don . " LIMIT 1";
+        $sql = "SELECT ID AS ma_hoa_don, KhachHangID AS ma_khach_hang,
+                       TongTien AS tong_tien, TrangThai AS trang_thai
+                  FROM HoaDon WHERE ID = " . $ma_hoa_don . " LIMIT 1";
         $result = mysqli_query($conn, $sql);
         $hoa_don = $result ? mysqli_fetch_assoc($result) : false;
 
@@ -43,7 +48,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['xac_nhan_thanh_toan'])
                 // Khong tu dong danh dau thanh cong khi chua xac minh voi ngan hang.
                 $ma_giao_dich = isset($_POST['ma_giao_dich_ngan_hang']) ? trim($_POST['ma_giao_dich_ngan_hang']) : '';
                 $ma_giao_dich_sql = ($ma_giao_dich == '') ? 'NULL' : "'" . mysqli_real_escape_string($conn, $ma_giao_dich) . "'";
-                $sql = "INSERT INTO thanh_toan (ma_hoa_don, phuong_thuc_thanh_toan, so_tien, trang_thai, thoi_gian, ma_giao_dich_ngan_hang) VALUES (" . $ma_hoa_don . ", 'ChuyenKhoan', " . $tong_tien . ", 'ChoXacNhan', NOW(), " . $ma_giao_dich_sql . ")";
+                $sql = "INSERT INTO ThanhToan
+                    (HoaDonID, KhachHangID, PhuongThucThanhToan, SoTien, TrangThai, ThoiGian, MaGiaoDichNganHang)
+                    VALUES (" . $ma_hoa_don . ", " . (int)$hoa_don['ma_khach_hang'] . ",
+                    'ChuyenKhoan', " . $tong_tien . ", 'ChoXacNhan', NOW(), " . $ma_giao_dich_sql . ")";
                 if (mysqli_query($conn, $sql)) {
                     $message = 'Da ghi nhan yeu cau chuyen khoan. Giao dich dang ChoXacNhan; nhan vien phai kiem tra tien vao tai khoan ngan hang truoc khi xac nhan thanh cong.';
                     $message_type = 'success';
@@ -54,7 +62,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['xac_nhan_thanh_toan'])
             } else {
                 // Tien mat: kiem tra ton kho va cap nhat trong transaction.
                 mysqli_query($conn, 'START TRANSACTION');
-                $chi_tiet_sql = "SELECT c.ma_san_pham, c.so_luong, s.ten_san_pham, s.so_luong_ton FROM chi_tiet_don_hang c INNER JOIN san_pham s ON c.ma_san_pham = s.ma_san_pham WHERE c.ma_hoa_don = " . $ma_hoa_don;
+                $chi_tiet_sql = "SELECT c.SanPhamID AS ma_san_pham, c.SoLuong AS so_luong,
+                    s.TenSanPham AS ten_san_pham, s.SoLuongTon AS so_luong_ton
+                    FROM ChiTietHoaDon c INNER JOIN SanPham s ON c.SanPhamID = s.ID
+                    WHERE c.HoaDonID = " . $ma_hoa_don;
                 $chi_tiet_result = mysqli_query($conn, $chi_tiet_sql);
                 $co_chi_tiet = false;
                 $du_ton_kho = true;
@@ -75,9 +86,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['xac_nhan_thanh_toan'])
                     $message = !$chi_tiet_result ? 'Khong doc duoc chi tiet hoa don.' : (!$co_chi_tiet ? 'Hoa don chua co san pham.' : $loi_ton_kho);
                     $message_type = 'error';
                 } else {
-                    $cap_nhat_ton = mysqli_query($conn, "UPDATE san_pham s INNER JOIN chi_tiet_don_hang c ON s.ma_san_pham = c.ma_san_pham SET s.so_luong_ton = s.so_luong_ton - c.so_luong WHERE c.ma_hoa_don = " . $ma_hoa_don);
-                    $insert_tt = mysqli_query($conn, "INSERT INTO thanh_toan (ma_hoa_don, phuong_thuc_thanh_toan, so_tien, trang_thai, thoi_gian, ma_nhan_vien_xac_nhan) VALUES (" . $ma_hoa_don . ", 'TienMat', " . $tong_tien . ", 'ThanhCong', NOW(), " . $ma_nhan_vien . ")");
-                    $update_hd = mysqli_query($conn, "UPDATE don_hang SET trang_thai = 'DaThanhToan' WHERE ma_hoa_don = " . $ma_hoa_don . " AND trang_thai = 'ChoThanhToan'");
+                    $cap_nhat_ton = mysqli_query($conn, "UPDATE SanPham s
+                        INNER JOIN ChiTietHoaDon c ON s.ID = c.SanPhamID
+                        SET s.SoLuongTon = s.SoLuongTon - c.SoLuong WHERE c.HoaDonID = " . $ma_hoa_don);
+                    $insert_tt = mysqli_query($conn, "INSERT INTO ThanhToan
+                        (HoaDonID, KhachHangID, PhuongThucThanhToan, SoTien, TrangThai, ThoiGian, NhanVienXacNhanID)
+                        VALUES (" . $ma_hoa_don . ", " . (int)$hoa_don['ma_khach_hang'] . ",
+                        'TienMat', " . $tong_tien . ", 'ThanhCong', NOW(), " . $ma_nhan_vien . ")");
+                    $update_hd = mysqli_query($conn, "UPDATE HoaDon SET TrangThai = 'DaThanhToan'
+                        WHERE ID = " . $ma_hoa_don . " AND TrangThai = 'ChoThanhToan'");
                     if ($cap_nhat_ton && $insert_tt && $update_hd && mysqli_affected_rows($conn) == 1) {
                         mysqli_query($conn, 'COMMIT');
                         $message = 'Thanh toan tien mat thanh cong. Hoa don da duoc cap nhat va ton kho da tru.';
@@ -97,11 +114,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['xac_nhan_thanh_toan'])
 $hoa_don = false;
 $chi_tiet = false;
 if ($ma_hoa_don > 0) {
-    $sql_hd = "SELECT d.ma_hoa_don, d.ngay_lap, d.trang_thai, d.tong_tien, n.ten AS ten_nhan_vien, k.ten AS ten_khach_hang FROM don_hang d INNER JOIN nhan_vien n ON d.ma_nhan_vien = n.ma_nhan_vien LEFT JOIN khach_hang k ON d.ma_khach_hang = k.ma_khach_hang WHERE d.ma_hoa_don = " . $ma_hoa_don . " LIMIT 1";
+    $sql_hd = "SELECT d.ID AS ma_hoa_don, d.ThoiGianTao AS ngay_lap,
+        d.TrangThai AS trang_thai, d.TongTien AS tong_tien, n.Ten AS ten_nhan_vien,
+        NULL AS ten_khach_hang
+        FROM HoaDon d INNER JOIN NhanVien n ON d.NhanVienID = n.ID
+        WHERE d.ID = " . $ma_hoa_don . " LIMIT 1";
     $result_hd = mysqli_query($conn, $sql_hd);
     if ($result_hd) $hoa_don = mysqli_fetch_assoc($result_hd);
     if ($hoa_don) {
-        $chi_tiet = mysqli_query($conn, "SELECT c.ma_san_pham, s.ten_san_pham, c.so_luong, c.don_gia, c.thanh_tien FROM chi_tiet_don_hang c INNER JOIN san_pham s ON c.ma_san_pham = s.ma_san_pham WHERE c.ma_hoa_don = " . $ma_hoa_don);
+        $chi_tiet = mysqli_query($conn, "SELECT c.SanPhamID AS ma_san_pham,
+            s.TenSanPham AS ten_san_pham, c.SoLuong AS so_luong, c.DonGia AS don_gia,
+            c.ThanhTien AS thanh_tien FROM ChiTietHoaDon c
+            INNER JOIN SanPham s ON c.SanPhamID = s.ID WHERE c.HoaDonID = " . $ma_hoa_don);
     }
 }
 ?>

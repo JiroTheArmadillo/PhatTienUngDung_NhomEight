@@ -61,10 +61,10 @@ class DangNhapController
             return $vm;
         }
         // Giới hạn số lần thử sai trong một phiên nhằm giảm đoán mật khẩu.
-        if (isset($_SESSION['eightmart_khoa_den']) && time() < $_SESSION['eightmart_khoa_den']) {
-            $vm['loi'] = 'Đăng nhập sai nhiều lần. Vui lòng thử lại sau ít phút.';
-            return $vm;
-        }
+        // if (isset($_SESSION['eightmart_khoa_den']) && time() < $_SESSION['eightmart_khoa_den']) {
+        //     $vm['loi'] = 'Đăng nhập sai nhiều lần. Vui lòng thử lại sau ít phút.';
+        //     return $vm;
+        // }
 
         try {
             $rep = new TaiKhoanRep();

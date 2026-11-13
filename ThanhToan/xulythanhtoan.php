@@ -8,15 +8,19 @@
 session_start();
 require_once dirname(__FILE__) . '/../db.php';
 require_once dirname(__FILE__) . '/helpers.php';
+require_once dirname(__FILE__) . '/../php/XacThuc.php';
 $conn = eightmart_mysqli_connection();
 header('Content-Type: application/json; charset=utf-8');
 
 // Thoi han cua ma QR chuyen khoan (giay). 300 giay = 5 phut.
 define('THOI_HAN_QR', 300);
 
-// TODO: khi nhom lam xong dang nhap, bo so 2 di.
-// Tam thoi chua co dang nhap thi dung nhan vien mau (ma 2) trong file SQL.
-$ma_nhan_vien = isset($_SESSION['ma_nhan_vien']) ? intval($_SESSION['ma_nhan_vien']) : 2;
+$nguoiDung = XacThuc::layNguoiDung();
+if ($nguoiDung === null || !isset($nguoiDung['ma_nhan_vien'])
+    || (int)$nguoiDung['ma_nhan_vien'] <= 0) {
+    tra_ve(array('ok' => false, 'loi' => 'Phiên đăng nhập không hợp lệ.'));
+}
+$ma_nhan_vien = (int)$nguoiDung['ma_nhan_vien'];
 
 $action = isset($_GET['action']) ? $_GET['action'] : lay_post('action');
 
@@ -61,14 +65,14 @@ function chay($conn, $sql)
 // Tim ca dang mo cua nhan vien, chua co thi tu mo ca moi
 function lay_ca_dang_mo($conn, $ma_nhan_vien)
 {
-    $kq = chay($conn, "SELECT ma_ca FROM ca_lam_viec
-                       WHERE ma_nhan_vien = $ma_nhan_vien AND trang_thai = 'DangMo'
-                       ORDER BY ma_ca DESC LIMIT 1");
+    $kq = chay($conn, "SELECT ID AS ma_ca FROM CaLamViec
+                       WHERE NhanVienMoCaID = $ma_nhan_vien AND TrangThai = 'DangMo'
+                       ORDER BY ID DESC LIMIT 1");
     $dong = mysqli_fetch_assoc($kq);
     if ($dong) {
         return intval($dong['ma_ca']);
     }
-    chay($conn, "INSERT INTO ca_lam_viec (ma_nhan_vien, ngay_gio_bat_dau, trang_thai)
+    chay($conn, "INSERT INTO CaLamViec (NhanVienMoCaID, NgayGioBatDau, TrangThai)
                  VALUES ($ma_nhan_vien, NOW(), 'DangMo')");
     return mysqli_insert_id($conn);
 }
@@ -77,9 +81,9 @@ function lay_ca_dang_mo($conn, $ma_nhan_vien)
 function danh_dau_huy($conn, $ma_thanh_toan, $ma_hoa_don, $ly_do)
 {
     $ly_do_sql = mysqli_real_escape_string($conn, $ly_do);
-    chay($conn, "UPDATE thanh_toan SET trang_thai = 'ThatBai' WHERE ma_thanh_toan = $ma_thanh_toan");
-    chay($conn, "UPDATE don_hang SET trang_thai = 'DaHuy', ly_do_huy = '$ly_do_sql'
-                 WHERE ma_hoa_don = $ma_hoa_don");
+    chay($conn, "UPDATE ThanhToan SET TrangThai = 'ThatBai' WHERE ID = $ma_thanh_toan");
+    chay($conn, "UPDATE HoaDon SET TrangThai = 'DaHuy', LyDoHuy = '$ly_do_sql'
+                 WHERE ID = $ma_hoa_don");
 }
 
 // ---------- 1. Tim san pham theo ma ----------
@@ -90,9 +94,10 @@ function tim_san_pham($conn)
     if ($ma <= 0) {
         tra_ve(array('ok' => false, 'loi' => 'Mã sản phẩm không hợp lệ'));
     }
-    $kq = mysqli_query($conn, "SELECT ma_san_pham, ten_san_pham, gia_ban, so_luong_ton
-                               FROM san_pham
-                               WHERE ma_san_pham = $ma AND trang_thai = 'HoatDong'");
+    $kq = mysqli_query($conn, "SELECT ID AS ma_san_pham, TenSanPham AS ten_san_pham,
+                                      GiaBan AS gia_ban, SoLuongTon AS so_luong_ton
+                               FROM SanPham
+                               WHERE ID = $ma AND TrangThai = 'HoatDong'");
     $sp = $kq ? mysqli_fetch_assoc($kq) : null;
     if (!$sp) {
         tra_ve(array('ok' => false, 'loi' => 'Không tìm thấy sản phẩm ' . ma_sp_hien_thi($ma)));
@@ -137,15 +142,16 @@ function thanh_toan($conn, $ma_nhan_vien)
     $ma_ca = lay_ca_dang_mo($conn, $ma_nhan_vien);
 
     // Khong co thanh vien: moi lan thanh toan tu phat sinh 1 ma khach hang moi
-    chay($conn, "INSERT INTO khach_hang (ten) VALUES ('Khách lẻ')");
+    chay($conn, "INSERT INTO KhachHang () VALUES ()");
     $ma_khach_hang = mysqli_insert_id($conn);
 
     // Lay gia tu CSDL (khong tin gia gui tu trinh duyet) va kiem tra ton kho
     $tong_tien = 0;
     $chi_tiet = array();
     foreach ($gio_hang as $ma => $sl) {
-        $kq = chay($conn, "SELECT ten_san_pham, gia_ban, so_luong_ton FROM san_pham
-                           WHERE ma_san_pham = $ma AND trang_thai = 'HoatDong' FOR UPDATE");
+        $kq = chay($conn, "SELECT TenSanPham AS ten_san_pham, GiaBan AS gia_ban,
+                                  SoLuongTon AS so_luong_ton FROM SanPham
+                           WHERE ID = $ma AND TrangThai = 'HoatDong' FOR UPDATE");
         $sp = mysqli_fetch_assoc($kq);
         if (!$sp) {
             bao_loi($conn, 'Sản phẩm ' . ma_sp_hien_thi($ma) . ' không còn bán');
@@ -165,29 +171,32 @@ function thanh_toan($conn, $ma_nhan_vien)
     }
 
     // Tao don hang
-    chay($conn, "INSERT INTO don_hang (ma_nhan_vien, ma_khach_hang, ma_ca, ngay_lap, trang_thai, tong_tien)
+    chay($conn, "INSERT INTO HoaDon
+                 (NhanVienID, KhachHangID, CaLamViecID, ThoiGianTao, TrangThai, TongTien)
                  VALUES ($ma_nhan_vien, $ma_khach_hang, $ma_ca, NOW(), 'ChoThanhToan', $tong_tien)");
     $ma_hoa_don = mysqli_insert_id($conn);
 
     foreach ($chi_tiet as $ct) {
-        chay($conn, "INSERT INTO chi_tiet_don_hang (ma_hoa_don, ma_san_pham, so_luong, don_gia, thanh_tien)
+        chay($conn, "INSERT INTO ChiTietHoaDon (HoaDonID, SanPhamID, SoLuong, DonGia, ThanhTien)
                      VALUES ($ma_hoa_don, {$ct['ma']}, {$ct['sl']}, {$ct['don_gia']}, {$ct['thanh_tien']})");
     }
 
     if ($phuong_thuc == 'TienMat') {
         // Tien mat: thu ngan nhan tien ngay -> thanh cong luon, tru kho
-        chay($conn, "INSERT INTO thanh_toan (ma_hoa_don, phuong_thuc_thanh_toan, so_tien, trang_thai, thoi_gian, ma_nhan_vien_xac_nhan)
-                     VALUES ($ma_hoa_don, 'TienMat', $tong_tien, 'ThanhCong', NOW(), $ma_nhan_vien)");
+        chay($conn, "INSERT INTO ThanhToan
+                     (HoaDonID, KhachHangID, PhuongThucThanhToan, SoTien, TrangThai, ThoiGian, NhanVienXacNhanID)
+                     VALUES ($ma_hoa_don, $ma_khach_hang, 'TienMat', $tong_tien, 'ThanhCong', NOW(), $ma_nhan_vien)");
         $ma_thanh_toan = mysqli_insert_id($conn);
         foreach ($chi_tiet as $ct) {
-            chay($conn, "UPDATE san_pham SET so_luong_ton = so_luong_ton - {$ct['sl']} WHERE ma_san_pham = {$ct['ma']}");
+            chay($conn, "UPDATE SanPham SET SoLuongTon = SoLuongTon - {$ct['sl']} WHERE ID = {$ct['ma']}");
         }
-        chay($conn, "UPDATE don_hang SET trang_thai = 'DaThanhToan' WHERE ma_hoa_don = $ma_hoa_don");
+        chay($conn, "UPDATE HoaDon SET TrangThai = 'DaThanhToan' WHERE ID = $ma_hoa_don");
         $trang_thai = 'ThanhCong';
     } else {
         // Chuyen khoan: cho thu ngan kiem tra tai khoan roi moi xac nhan
-        chay($conn, "INSERT INTO thanh_toan (ma_hoa_don, phuong_thuc_thanh_toan, so_tien, trang_thai, thoi_gian)
-                     VALUES ($ma_hoa_don, 'ChuyenKhoan', $tong_tien, 'ChoXacNhan', NOW())");
+        chay($conn, "INSERT INTO ThanhToan
+                     (HoaDonID, KhachHangID, PhuongThucThanhToan, SoTien, TrangThai, ThoiGian)
+                     VALUES ($ma_hoa_don, $ma_khach_hang, 'ChuyenKhoan', $tong_tien, 'ChoXacNhan', NOW())");
         $ma_thanh_toan = mysqli_insert_id($conn);
         $trang_thai = 'ChoXacNhan';
     }
@@ -216,9 +225,10 @@ function xac_nhan_chuyen_khoan($conn, $ma_nhan_vien)
 
     mysqli_autocommit($conn, false);
 
-    $kq = chay($conn, "SELECT ma_hoa_don, TIMESTAMPDIFF(SECOND, thoi_gian, NOW()) AS so_giay_da_qua
-                       FROM thanh_toan
-                       WHERE ma_thanh_toan = $ma_thanh_toan AND trang_thai = 'ChoXacNhan' FOR UPDATE");
+    $kq = chay($conn, "SELECT HoaDonID AS ma_hoa_don,
+                              TIMESTAMPDIFF(SECOND, ThoiGian, NOW()) AS so_giay_da_qua
+                       FROM ThanhToan
+                       WHERE ID = $ma_thanh_toan AND TrangThai = 'ChoXacNhan' FOR UPDATE");
     $tt = mysqli_fetch_assoc($kq);
     if (!$tt) {
         bao_loi($conn, 'Giao dịch không tồn tại hoặc đã xử lý');
@@ -234,9 +244,10 @@ function xac_nhan_chuyen_khoan($conn, $ma_nhan_vien)
     }
 
     // Kiem tra lai ton kho luc nhan tien roi moi tru kho
-    $kq = chay($conn, "SELECT ct.ma_san_pham, ct.so_luong, sp.ten_san_pham, sp.so_luong_ton
-                       FROM chi_tiet_don_hang ct JOIN san_pham sp ON sp.ma_san_pham = ct.ma_san_pham
-                       WHERE ct.ma_hoa_don = $ma_hoa_don FOR UPDATE");
+    $kq = chay($conn, "SELECT ct.SanPhamID AS ma_san_pham, ct.SoLuong AS so_luong,
+                              sp.TenSanPham AS ten_san_pham, sp.SoLuongTon AS so_luong_ton
+                       FROM ChiTietHoaDon ct JOIN SanPham sp ON sp.ID = ct.SanPhamID
+                       WHERE ct.HoaDonID = $ma_hoa_don FOR UPDATE");
     $ds = array();
     while ($dong = mysqli_fetch_assoc($kq)) {
         if (intval($dong['so_luong_ton']) < intval($dong['so_luong'])) {
@@ -245,14 +256,14 @@ function xac_nhan_chuyen_khoan($conn, $ma_nhan_vien)
         $ds[] = $dong;
     }
     foreach ($ds as $dong) {
-        chay($conn, "UPDATE san_pham SET so_luong_ton = so_luong_ton - " . intval($dong['so_luong']) .
-                    " WHERE ma_san_pham = " . intval($dong['ma_san_pham']));
+        chay($conn, "UPDATE SanPham SET SoLuongTon = SoLuongTon - " . intval($dong['so_luong']) .
+                    " WHERE ID = " . intval($dong['ma_san_pham']));
     }
 
-    chay($conn, "UPDATE thanh_toan
-                 SET trang_thai = 'ThanhCong', thoi_gian = NOW(), ma_nhan_vien_xac_nhan = $ma_nhan_vien
-                 WHERE ma_thanh_toan = $ma_thanh_toan");
-    chay($conn, "UPDATE don_hang SET trang_thai = 'DaThanhToan' WHERE ma_hoa_don = $ma_hoa_don");
+    chay($conn, "UPDATE ThanhToan
+                 SET TrangThai = 'ThanhCong', ThoiGian = NOW(), NhanVienXacNhanID = $ma_nhan_vien
+                 WHERE ID = $ma_thanh_toan");
+    chay($conn, "UPDATE HoaDon SET TrangThai = 'DaThanhToan' WHERE ID = $ma_hoa_don");
 
     mysqli_commit($conn);
     mysqli_autocommit($conn, true);
@@ -266,8 +277,8 @@ function huy_chuyen_khoan($conn)
     $ma_thanh_toan = intval(lay_post('ma_thanh_toan'));
     mysqli_autocommit($conn, false);
 
-    $kq = chay($conn, "SELECT ma_hoa_don FROM thanh_toan
-                       WHERE ma_thanh_toan = $ma_thanh_toan AND trang_thai = 'ChoXacNhan' FOR UPDATE");
+    $kq = chay($conn, "SELECT HoaDonID AS ma_hoa_don FROM ThanhToan
+                       WHERE ID = $ma_thanh_toan AND TrangThai = 'ChoXacNhan' FOR UPDATE");
     $tt = mysqli_fetch_assoc($kq);
     if (!$tt) {
         bao_loi($conn, 'Giao dịch không tồn tại hoặc đã xử lý');

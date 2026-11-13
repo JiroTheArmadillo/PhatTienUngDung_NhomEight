@@ -1,7 +1,7 @@
 <?php
 /**
  * BaoMat - các tiện ích dùng được trên PHP 5.2 / WAMP 2.0.
- * Mật khẩu được băm PBKDF2-HMAC-SHA256 kèm muối riêng cho từng tài khoản.
+ * Hỗ trợ mật khẩu MD5 cũ và PBKDF2-HMAC-SHA256 cho tài khoản mới.
  * Không sử dụng password_hash(), password_verify() hoặc hash_equals() (PHP mới).
  */
 class BaoMat
@@ -68,6 +68,11 @@ class BaoMat
     public static function kiemTraMatKhau($matKhau, $daLuu)
     {
         if (!is_string($daLuu)) { return false; }
+        // Tương thích dữ liệu cũ được lưu bằng MD5(...) trong schema SQL.
+        if (preg_match('/^[0-9a-f]{32}$/iD', $daLuu)) {
+            return is_string($matKhau)
+                && self::bangNhau(md5($matKhau), strtolower($daLuu));
+        }
         if (preg_match('/^pbkdf2_sha256\$([0-9]+)\$([0-9a-f]{32})\$([0-9a-f]{64})$/D', $daLuu, $m)) {
             $soVong = (int) $m[1];
             if ($soVong < 1000 || $soVong > 1000000) { return false; }

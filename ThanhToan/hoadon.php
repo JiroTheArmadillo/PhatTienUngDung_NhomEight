@@ -5,24 +5,30 @@ $conn = eightmart_mysqli_connection();
 
 $ma_hoa_don = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-$kq = mysqli_query($conn, "SELECT d.ma_hoa_don, d.ngay_lap, d.trang_thai, d.tong_tien,
-                                  nv.ten AS ten_nhan_vien, d.ma_khach_hang
-                           FROM don_hang d
-                           JOIN nhan_vien nv ON nv.ma_nhan_vien = d.ma_nhan_vien
-                           WHERE d.ma_hoa_don = $ma_hoa_don");
+$kq = mysqli_query($conn, "SELECT d.ID AS ma_hoa_don, d.ThoiGianTao AS ngay_lap,
+                                  d.TrangThai AS trang_thai, d.TongTien AS tong_tien,
+                                  nv.Ten AS ten_nhan_vien, d.KhachHangID AS ma_khach_hang
+                           FROM HoaDon d
+                           JOIN NhanVien nv ON nv.ID = d.NhanVienID
+                           WHERE d.ID = $ma_hoa_don");
 $hd = $kq ? mysqli_fetch_assoc($kq) : null;
 if (!$hd) {
     die('Không tìm thấy hóa đơn');
 }
 
-$ds_sp = mysqli_query($conn, "SELECT ct.ma_san_pham, sp.ten_san_pham, ct.so_luong, ct.don_gia, ct.thanh_tien
-                              FROM chi_tiet_don_hang ct
-                              JOIN san_pham sp ON sp.ma_san_pham = ct.ma_san_pham
-                              WHERE ct.ma_hoa_don = $ma_hoa_don");
+$ds_sp = mysqli_query($conn, "SELECT ct.SanPhamID AS ma_san_pham,
+                                     sp.TenSanPham AS ten_san_pham,
+                                     ct.SoLuong AS so_luong, ct.DonGia AS don_gia,
+                                     ct.ThanhTien AS thanh_tien
+                              FROM ChiTietHoaDon ct
+                              JOIN SanPham sp ON sp.ID = ct.SanPhamID
+                              WHERE ct.HoaDonID = $ma_hoa_don");
 
-$kq_tt = mysqli_query($conn, "SELECT phuong_thuc_thanh_toan, trang_thai, thoi_gian, ma_giao_dich_ngan_hang
-                              FROM thanh_toan WHERE ma_hoa_don = $ma_hoa_don
-                              ORDER BY ma_thanh_toan DESC LIMIT 1");
+$kq_tt = mysqli_query($conn, "SELECT PhuongThucThanhToan AS phuong_thuc_thanh_toan,
+                                     TrangThai AS trang_thai, ThoiGian AS thoi_gian,
+                                     MaGiaoDichNganHang AS ma_giao_dich_ngan_hang
+                              FROM ThanhToan WHERE HoaDonID = $ma_hoa_don
+                              ORDER BY ID DESC LIMIT 1");
 $tt = $kq_tt ? mysqli_fetch_assoc($kq_tt) : null;
 
 function tien($so)
@@ -31,7 +37,8 @@ function tien($so)
 }
 
 $ten_phuong_thuc = array('TienMat' => 'Tiền mặt', 'ChuyenKhoan' => 'Chuyển khoản');
-$ten_trang_thai = array('ChoThanhToan' => 'Chờ thanh toán', 'DaThanhToan' => 'Đã thanh toán', 'DaHuy' => 'Đã hủy');
+$ten_trang_thai = array('ChoThanhToan' => 'Chờ thanh toán', 'DaThanhToan' => 'Đã thanh toán',
+    'HoanThanh' => 'Đã thanh toán', 'DaHuy' => 'Đã hủy');
 ?>
 <!DOCTYPE html>
 <html lang="vi">

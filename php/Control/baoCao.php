@@ -26,36 +26,44 @@ class BaoCao {
     }
 
     public function getDanhSachNhanVien() {
-        return $this->rows('SELECT ma_nhan_vien AS ma_nv, ten AS ho_ten, gioi_tinh, sdt AS so_dien_thoai, vai_tro AS chuc_vu FROM nhan_vien ORDER BY ma_nhan_vien');
+        return $this->rows('SELECT nv.ID AS ma_nv, nv.Ten AS ho_ten, nv.GioiTinh AS gioi_tinh,
+            nv.Sdt AS so_dien_thoai, tk.VaiTro AS chuc_vu
+            FROM NhanVien nv LEFT JOIN TaiKhoan tk ON tk.NhanVienID = nv.ID ORDER BY nv.ID');
     }
 
     public function getDanhSachCa() {
-        return $this->rows('SELECT ma_ca, ngay_gio_bat_dau AS bat_dau, ngay_gio_ket_thuc AS ket_thuc, trang_thai, ma_nhan_vien AS ma_nv_mo_ca FROM ca_lam_viec ORDER BY ngay_gio_bat_dau DESC');
+        return $this->rows('SELECT ID AS ma_ca, NgayGioBatDau AS bat_dau,
+            NgayGioKetThuc AS ket_thuc, TrangThai AS trang_thai,
+            NhanVienMoCaID AS ma_nv_mo_ca FROM CaLamViec ORDER BY NgayGioBatDau DESC');
     }
 
     private function thongKe($field, $id) {
-        // Mot hoa don duoc tinh mot lan, ke ca khi co nhieu dong thanh_toan.
-        // Chi tinh hoa don da thanh toan va co thanh toan thanh cong.
-        $sql = "SELECT COUNT(*) AS tong_hoa_don, COALESCE(SUM(d.tong_tien), 0) AS tong_doanh_thu " .
-               "FROM don_hang d WHERE d." . $field . " = " . $id .
-               " AND d.trang_thai = 'DaThanhToan' " .
-               "AND EXISTS (SELECT 1 FROM thanh_toan t WHERE t.ma_hoa_don = d.ma_hoa_don AND t.trang_thai = 'ThanhCong')";
+        // Một hóa đơn được tính một lần, kể cả khi có nhiều bản ghi thanh toán.
+        $sql = "SELECT COUNT(*) AS tong_hoa_don, COALESCE(SUM(d.TongTien), 0) AS tong_doanh_thu " .
+               "FROM HoaDon d WHERE d." . $field . " = " . $id .
+               " AND d.TrangThai IN ('DaThanhToan', 'HoanThanh') " .
+               "AND EXISTS (SELECT 1 FROM ThanhToan t WHERE t.HoaDonID = d.ID AND t.TrangThai IN ('ThanhCong', 'DaThanhToan'))";
         $rows = $this->rows($sql);
         return $rows[0];
     }
 
     public function getBaoCaoNhanVien($maNV) {
         $id = $this->id($maNV);
-        $list = $this->rows('SELECT ma_nhan_vien AS ma_nv, ten AS ho_ten, gioi_tinh, sdt AS so_dien_thoai, vai_tro AS chuc_vu FROM nhan_vien WHERE ma_nhan_vien = ' . $id . ' LIMIT 1');
+        $list = $this->rows('SELECT nv.ID AS ma_nv, nv.Ten AS ho_ten, nv.GioiTinh AS gioi_tinh,
+            nv.Sdt AS so_dien_thoai, tk.VaiTro AS chuc_vu
+            FROM NhanVien nv LEFT JOIN TaiKhoan tk ON tk.NhanVienID = nv.ID
+            WHERE nv.ID = ' . $id . ' LIMIT 1');
         if (count($list) === 0) return null;
-        return array('thong_tin' => $list[0], 'thong_ke' => $this->thongKe('ma_nhan_vien', $id));
+        return array('thong_tin' => $list[0], 'thong_ke' => $this->thongKe('NhanVienID', $id));
     }
 
     public function getBaoCaoCa($maCa) {
         $id = $this->id($maCa);
-        $list = $this->rows('SELECT ma_ca, ngay_gio_bat_dau AS bat_dau, ngay_gio_ket_thuc AS ket_thuc, trang_thai, ma_nhan_vien AS ma_nv_mo_ca FROM ca_lam_viec WHERE ma_ca = ' . $id . ' LIMIT 1');
+        $list = $this->rows('SELECT ID AS ma_ca, NgayGioBatDau AS bat_dau,
+            NgayGioKetThuc AS ket_thuc, TrangThai AS trang_thai,
+            NhanVienMoCaID AS ma_nv_mo_ca FROM CaLamViec WHERE ID = ' . $id . ' LIMIT 1');
         if (count($list) === 0) return null;
-        return array('thong_tin' => $list[0], 'thong_ke' => $this->thongKe('ma_ca', $id));
+        return array('thong_tin' => $list[0], 'thong_ke' => $this->thongKe('CaLamViecID', $id));
     }
 }
 ?>

@@ -84,8 +84,8 @@ try {
         <div class="logo">EIGHT STORE</div>
         <a href="GD_TrangChu.php">dashboard</a>
          <a href="GD_QuanLyBanHang.php">Quản lý Bán Hàng</a>
-        <a href="GD_QuanLyNhanVien.php" class="active" aria-current="page">Quản lý nhân viên</a>
-        <a href="GD_QuanLyNhaCungCap.php">Quản lý nhà cung cấp</a>
+        <a href="GD_QuanLyNhanVien.php" class="active" aria-current="page">quản lý nhân viên</a>
+        <a href="GD_QuanLyNhaCungCap.php">quản lý nhà cung cấp</a>
         <a href="GD_LapPhieuDatHang.php">Lập phiếu đặt hàng</a>
         <a href="GD_DuyetPhieuDatHang.php">Duyệt phiếu đặt hàng</a>
         <a href="GD_XuLyHoanTra.php">Xử lý hoàn trả</a>       

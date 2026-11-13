@@ -29,7 +29,7 @@ function eightmart_mysqli_connection()
         if (mysqli_connect_errno()) {
             $error = mysqli_connect_error();
             $connection = null;
-            throw new Exception('Không kết nối được CSDL eightmart: ' . $error);
+            throw new Exception('Không kết nối được CSDL ' . DB_NAME . ': ' . $error);
         }
         if (!$connection->set_charset('utf8')) {
             $error = $connection->error;

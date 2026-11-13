@@ -3,6 +3,8 @@
 session_start();
 require_once dirname(__FILE__) . '/../db.php';
 require_once dirname(__FILE__) . '/../ThanhToan/helpers.php';
+require_once dirname(__FILE__) . '/../php/XacThuc.php';
+$nguoiDung = XacThuc::yeuCauDangNhap();
 $conn = eightmart_mysqli_connection();
 
 function hSanPham($giaTri) { return htmlspecialchars((string) $giaTri, ENT_QUOTES, 'UTF-8'); }
@@ -10,10 +12,10 @@ function hSanPham($giaTri) { return htmlspecialchars((string) $giaTri, ENT_QUOTE
 $loiSanPham = '';
 $quanLyDanhSachSanPham = array();
 $resultSanPham = mysqli_query($conn,
-    "SELECT ma_san_pham, ten_san_pham, gia_ban, so_luong_ton
-     FROM san_pham
-     WHERE trang_thai = 'HoatDong'
-     ORDER BY ma_san_pham");
+    "SELECT ID AS ma_san_pham, TenSanPham AS ten_san_pham, GiaBan AS gia_ban, SoLuongTon AS so_luong_ton
+     FROM SanPham
+     WHERE TrangThai = 'HoatDong'
+     ORDER BY ID");
 
 if (!$resultSanPham) {
     $loiSanPham = 'Không thể tải danh sách sản phẩm từ CSDL.';
@@ -59,8 +61,8 @@ if (!$resultSanPham) {
         <div class="logo">EIGHT STORE</div>
       <a href="GD_TrangChu.php">dashboard</a>
          <a href="GD_QuanLyBanHang.php">Quản lý Bán Hàng</a>
-        <a href="GD_QuanLyNhanVien.php" class="active" aria-current="page">Quản lý nhân viên</a>
-        <a href="GD_QuanLyNhaCungCap.php">Quản lý nhà cung cấp</a>
+        <a href="GD_QuanLyNhanVien.php" class="active" aria-current="page">quản lý nhân viên</a>
+        <a href="GD_QuanLyNhaCungCap.php">quản lý nhà cung cấp</a>
         <a href="GD_LapPhieuDatHang.php">Lập phiếu đặt hàng</a>
         <a href="GD_DuyetPhieuDatHang.php">Duyệt phiếu đặt hàng</a>
         <a href="GD_XuLyHoanTra.php">Xử lý hoàn trả</a>       

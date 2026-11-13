@@ -23,7 +23,7 @@ function hTrangChu($chuoi)
 }
 
 // Các chỉ số ở GD_TrangChu.html ban đầu là số minh họa;
-// đọc số thực từ cơ sở dữ liệu schema khi có quyền chủ doanh nghiệp.
+// đọc số thực từ cơ sở dữ liệu khi có quyền chủ doanh nghiệp.
 $soSanPhamTrongKho = '—';
 $soHoaDonDaThanhToan = '—';
 $tongDoanhThu = '—';
@@ -31,10 +31,9 @@ $loiThongKe = false;
 if ($laChuDoanhNghiep) {
 try {
 
-    $db = KetNoiDB::layKetNoi();
-    $soLuongTon = $db->query('SELECT COALESCE(SUM(SoLuongTon), 0) FROM SanPham')->fetchColumn();
-    $soHoaDon = $db->query("SELECT COUNT(DISTINCT HoaDonID) FROM ThanhToan WHERE TrangThai = 'DaThanhToan'")->fetchColumn();
-    $doanhThu = $db->query("SELECT COALESCE(SUM(SoTien), 0) FROM ThanhToan WHERE TrangThai = 'DaThanhToan'")->fetchColumn();
+    $soLuongTon = eightmart_mysqli_fetch_value(eightmart_mysqli_execute('SELECT COALESCE(SUM(SoLuongTon), 0) FROM SanPham'));
+    $soHoaDon = eightmart_mysqli_fetch_value(eightmart_mysqli_execute("SELECT COUNT(DISTINCT HoaDonID) FROM ThanhToan WHERE TrangThai IN ('DaThanhToan', 'ThanhCong')"));
+    $doanhThu = eightmart_mysqli_fetch_value(eightmart_mysqli_execute("SELECT COALESCE(SUM(SoTien), 0) FROM ThanhToan WHERE TrangThai IN ('DaThanhToan', 'ThanhCong')"));
     $soSanPhamTrongKho = number_format((float) $soLuongTon, 0, ',', '.');
     $soHoaDonDaThanhToan = number_format((float) $soHoaDon, 0, ',', '.');
     $tongDoanhThu = number_format((float) $doanhThu, 0, ',', '.') . ' đ';
@@ -48,11 +47,13 @@ try {
 // Giữ các mục menu đúng theo giao diện HTML mẫu.
 // Chuc nang chua co file: hien thi nhan nhung khong dan den trang 404.
 $menuTrangChu = array(
-    array('ten' => 'Quản lý Bán Hàng', 'file' => 'GD_QuanLyBanHang.html', 'chiChu' => false),
+    array('ten' => 'Quản lý Bán Hàng', 'file' => 'GD_QuanLyBanHang.php', 'chiChu' => false),
     array('ten' => $laChuDoanhNghiep ? 'Quản lý nhân viên' : 'Thông tin cá nhân', 'file' => 'GD_QuanLyNhanVien.php', 'chiChu' => true),
-    array('ten' => 'Lập phiếu đặt hàng', 'file' => 'GD_LapPhieuDatHang.html', 'chiChu' => false),
-    array('ten' => 'Duyệt phiếu đặt hàng', 'file' => 'GD_DuyetPhieuDatHang.html', 'chiChu' => false),
-    array('ten' => 'Xử lý hoàn trả', 'file' => 'GD_XuLyHoanTra.html', 'chiChu' => false)
+    array('ten' => 'Lập phiếu đặt hàng', 'file' => 'GD_LapPhieuDatHang.php', 'chiChu' => false),
+    array('ten' => 'Duyệt phiếu đặt hàng', 'file' => 'GD_DuyetPhieuDatHang.php', 'chiChu' => false),
+    array('ten' => 'Xử lý hoàn trả', 'file' => 'GD_XuLyHoanTra.php', 'chiChu' => false),
+    array('ten' => 'Quản lý Nhà Cung cấp', 'file' => 'GD_QuanLyNhaCungCap.php', 'chiChu' => false),
+    array('ten' => 'Báo cáo', 'file' => 'GD_BaoCao.php', 'chiChu' => false)
 );
 ?>
 <!DOCTYPE html>
