@@ -4,7 +4,10 @@ session_start();
 require_once dirname(__FILE__) . '/../db.php';
 require_once dirname(__FILE__) . '/../ThanhToan/helpers.php';
 require_once dirname(__FILE__) . '/../php/XacThuc.php';
+require_once dirname(__FILE__) . '/../php/Control/donHangController.php';
 $nguoiDung = XacThuc::yeuCauDangNhap();
+// Nút "Xem danh sách đơn hàng" chỉ dành cho Chủ doanh nghiệp.
+$coQuyenXemDonHang = DonHangController::choPhepXem($nguoiDung);
 $conn = eightmart_mysqli_connection();
 
 function hSanPham($giaTri) { return htmlspecialchars((string) $giaTri, ENT_QUOTES, 'UTF-8'); }
@@ -33,6 +36,7 @@ if (!$resultSanPham) {
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         h2 { text-align: center; margin-bottom: 20px; }
+        .chuyen-giao-dien { display: flex; gap: 10px; justify-content: center; margin: -5px 0 15px; }
         .nhap-sp { display: flex; gap: 10px; padding: 15px; margin-bottom: 15px; background: white; border-radius: 6px; }
         .khung-danh-sach { margin-bottom: 15px; padding: 15px; background: white; border-radius: 6px; }
         .khung-danh-sach h3 { margin-bottom: 10px; }
@@ -72,6 +76,12 @@ if (!$resultSanPham) {
 
     <div class="main">
         <h2>Lập hóa đơn bán hàng</h2>
+        <?php if ($coQuyenXemDonHang): ?>
+        <div class="chuyen-giao-dien">
+            <a class="btn primary" href="GD_QuanLyBanHang.php" aria-current="page">Lập hóa đơn bán hàng</a>
+            <a class="btn secondary" href="GD_DanhSachDonHang.php">Xem danh sách đơn hàng</a>
+        </div>
+        <?php endif; ?>
         <div class="nhap-sp">
             <input type="text" id="txtMaSP" placeholder="Nhập mã SP, ví dụ SP001" autofocus>
             <input type="number" id="txtSoLuong" min="1" value="1" title="Số lượng">
