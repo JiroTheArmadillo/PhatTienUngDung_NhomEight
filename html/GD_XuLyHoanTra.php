@@ -172,6 +172,7 @@ function hienTrangThai($tt)
     <div class="sidebar">
          <div class="logo">EIGHT STORE</div>
          <a href="GD_TrangChu.php">dashboard</a>
+         <a href="GD_QuanLyCaLamViec.php">Quản lý ca làm việc</a>
          <a href="GD_QuanLyBanHang.php">Quản lý Bán Hàng</a>
         <a href="GD_QuanLyNhanVien.php" <?php $nguoiDung['vai_tro'] !=='QuanLy' ? 'style:"pointer-events:none;"' : '' ?>>quản lý nhân viên</a>
         <a href="GD_QuanLyNhaCungCap.php">quản lý nhà cung cấp</a>

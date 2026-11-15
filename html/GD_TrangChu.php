@@ -7,6 +7,7 @@
  */
 require_once dirname(__FILE__) . '/../php/XacThuc.php';
 require_once dirname(__FILE__) . '/../db.php';
+require_once dirname(__FILE__) . '/../php/Repository/CaLamViecRepository.php';
 $nguoiDung = XacThuc::yeuCauDangNhap();
 $laChuDoanhNghiep = isset($nguoiDung['vai_tro']) && $nguoiDung['vai_tro'] === 'ChuDoanhNghiep';
 $tenNguoiDung = isset($nguoiDung['ho_ten']) ? $nguoiDung['ho_ten'] : '';
@@ -44,9 +45,24 @@ try {
 }
 }
 
+// Ca làm việc hiện tại của nhân viên đang đăng nhập (hiển thị ở thẻ "Ca làm việc"); null nếu không tải được.
+$caDangMo = null;
+$daTaiTrangThaiCa = false;
+try {
+    $maNhanVienCa = isset($nguoiDung['ma_nhan_vien']) ? (int) $nguoiDung['ma_nhan_vien'] : 0;
+    if ($maNhanVienCa > 0) {
+        $repCa = new CaLamViecRepository();
+        $caDangMo = $repCa->layCaDangMo($maNhanVienCa);
+        $daTaiTrangThaiCa = true;
+    }
+} catch (Exception $e) {
+    error_log('[TrangChu] Khong the tai trang thai ca lam viec: ' . $e->getMessage());
+}
+
 // Giữ các mục menu đúng theo giao diện HTML mẫu.
 // Chuc nang chua co file: hien thi nhan nhung khong dan den trang 404.
 $menuTrangChu = array(
+    array('ten' => 'Quản lý ca làm việc', 'file' => 'GD_QuanLyCaLamViec.php', 'chiChu' => false),
     array('ten' => 'Quản lý Bán Hàng', 'file' => 'GD_QuanLyBanHang.php', 'chiChu' => false),
     array('ten' => $laChuDoanhNghiep ? 'Quản lý nhân viên' : 'Thông tin cá nhân', 'file' => 'GD_QuanLyNhanVien.php', 'chiChu' => true),
     array('ten' => 'Lập phiếu đặt hàng', 'file' => 'GD_LapPhieuDatHang.php', 'chiChu' => false),
@@ -98,7 +114,7 @@ $menuTrangChu = array(
         <div class="logo">EIGHT STORE</div>
         <a href="GD_TrangChu.php" class="active" aria-current="page">Trang chủ</a>
         <?php foreach ($menuTrangChu as $muc): ?>
-            <?php if (!$laChuDoanhNghiep && $muc['file'] !== 'GD_QuanLyNhanVien.php') continue; ?>
+            <?php if (!$laChuDoanhNghiep && $muc['file'] !== 'GD_QuanLyNhanVien.php' && $muc['file'] !== 'GD_QuanLyCaLamViec.php') continue; ?>
             <?php if (is_file(dirname(__FILE__) . '/' . $muc['file'])): ?>
                 <a href="<?php echo hTrangChu($muc['file']); ?>"><?php echo hTrangChu($muc['ten']); ?></a>
             <?php else: ?>
@@ -135,6 +151,18 @@ $menuTrangChu = array(
                 <span class="divider">|</span>
                 <span>Vai trò: <b><?php echo hTrangChu($vaiTroHienThi); ?></b></span>
             </div>
+
+            <?php if ($daTaiTrangThaiCa): ?>
+            <div class="info-card">
+                <b>🕒 Ca làm việc:</b>
+                <?php if ($caDangMo !== null): ?>
+                    <span>Đang mở - Ca #<?php echo (int) $caDangMo['ma_ca']; ?>, bắt đầu lúc <b><?php echo hTrangChu(date('d/m/Y H:i', strtotime($caDangMo['bat_dau']))); ?></b></span>
+                <?php else: ?>
+                    <span>Bạn chưa có ca làm việc đang mở.</span>
+                <?php endif; ?>
+                <a style="display:inline-block;margin-left:12px;color:#168f8b" href="GD_QuanLyCaLamViec.php">Quản lý ca làm việc</a>
+            </div>
+            <?php endif; ?>
 
             <?php if ($laChuDoanhNghiep): ?>
             <h3 class="stats-heading">Thống kê hoạt động kinh doanh</h3>

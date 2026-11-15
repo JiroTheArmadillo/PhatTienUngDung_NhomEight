@@ -62,19 +62,18 @@ function chay($conn, $sql)
     return $kq;
 }
 
-// Tim ca dang mo cua nhan vien, chua co thi tu mo ca moi
+// Tim ca dang mo cua nhan vien. Phai bat dau ca o man hinh "Quan ly ca lam viec" (UC35) truoc khi ban hang;
+// khong con tu mo ca moi nua.
 function lay_ca_dang_mo($conn, $ma_nhan_vien)
 {
     $kq = chay($conn, "SELECT ID AS ma_ca FROM CaLamViec
                        WHERE NhanVienMoCaID = $ma_nhan_vien AND TrangThai = 'DangMo'
                        ORDER BY ID DESC LIMIT 1");
     $dong = mysqli_fetch_assoc($kq);
-    if ($dong) {
-        return intval($dong['ma_ca']);
+    if (!$dong) {
+        bao_loi($conn, 'Bạn chưa bắt đầu ca làm việc. Vui lòng bắt đầu ca ở mục "Quản lý ca làm việc" trước khi bán hàng.');
     }
-    chay($conn, "INSERT INTO CaLamViec (NhanVienMoCaID, NgayGioBatDau, TrangThai)
-                 VALUES ($ma_nhan_vien, NOW(), 'DangMo')");
-    return mysqli_insert_id($conn);
+    return intval($dong['ma_ca']);
 }
 
 // Danh dau thanh toan that bai va huy don hang

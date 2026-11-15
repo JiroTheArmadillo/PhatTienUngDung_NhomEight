@@ -102,7 +102,9 @@ try {
 </style></head>
 <body class="giao-dien-chung">
 <aside class="sidebar"><div class="logo">EIGHT STORE</div><nav>
-<a href="GD_TrangChu.php">Trang chủ</a><a href="GD_QuanLyBanHang.php">Quản lý bán hàng</a>
+<a href="GD_TrangChu.php">Trang chủ</a>
+<a href="GD_QuanLyCaLamViec.php">Quản lý ca làm việc</a>
+<a href="GD_QuanLyBanHang.php">Quản lý bán hàng</a>
 <?php if ($laChu): ?><a href="GD_QuanLyNhanVien.php">Quản lý nhân viên</a><?php endif; ?>
 <a href="GD_QuanLyNhaCungCap.php">Quản lý nhà cung cấp</a><a href="GD_LapPhieuDatHang.php">Lập phiếu đặt hàng</a>
 <?php if ($laChu): ?><a href="GD_DuyetPhieuDatHang.php">Duyệt phiếu đặt hàng</a><?php endif; ?>
