@@ -41,6 +41,8 @@ function e($s)
         button, .btn { border: 0; border-radius: 4px; padding: 10px 14px; color: white; cursor: pointer; text-decoration: none; display: inline-block; }
         button[disabled] { opacity: .6; cursor: default; }
         .btn-nho { padding: 6px 10px; font-size: 13px; }
+        .warn { background: #e67e22; }
+        .nhom-nut { display: flex; gap: 6px; }
         .primary { background: #3498db; } .success { background: #27ae60; } .danger { background: #e74c3c; } .secondary { background: #7f8c8d; }
         .badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; background: #ecf0f1; color: #555; }
         .badge-success { background: #d5f5e3; color: #1e8449; }
@@ -64,7 +66,10 @@ function e($s)
         .khung-phu { display: none; margin-top: 12px; padding: 14px; background: #f8f9fa; border: 1px solid #e1e5e8; border-radius: 6px; }
         .khung-phu h4 { font-size: 15px; margin-bottom: 10px; }
         .khung-phu label { display: block; font-size: 13px; margin: 8px 0 4px; }
-        .khung-phu select, .khung-phu input { width: 100%; padding: 9px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+        .khung-phu select, .khung-phu input, .khung-phu textarea { width: 100%; padding: 9px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; font-family: inherit; }
+        .khung-phu textarea { resize: vertical; }
+        .khung-phu table input { width: 80px; text-align: right; }
+        .khung-phu table { margin-bottom: 4px; }
         .hang-nut { display: flex; gap: 10px; justify-content: flex-end; margin-top: 12px; }
     </style>
     <link rel="stylesheet" href="khung-giao-dien.css">
@@ -73,7 +78,6 @@ function e($s)
     <div class="sidebar">
         <div class="logo">EIGHT STORE</div>
         <a href="GD_TrangChu.php">dashboard</a>
-        <a href="GD_QuanLyCaLamViec.php">Quản lý ca làm việc</a>
         <a href="GD_QuanLyBanHang.php" class="active" aria-current="page">Quản lý Bán Hàng</a>
         <a href="GD_QuanLyNhanVien.php">quản lý nhân viên</a>
         <a href="GD_QuanLyNhaCungCap.php">quản lý nhà cung cấp</a>
@@ -91,6 +95,8 @@ function e($s)
             <a class="btn secondary" href="GD_QuanLyBanHang.php">Lập hóa đơn bán hàng</a>
             <a class="btn primary" href="GD_DanhSachDonHang.php" aria-current="page">Xem danh sách đơn hàng</a>
         </div>
+
+        <div id="thong-bao-trang"></div>
 
         <?php if (!$coQuyen): ?>
             <div class="alert alert-error">Bạn không có quyền xem danh sách đơn hàng.</div>
@@ -123,10 +129,16 @@ function e($s)
                             <td><?php echo e(DonHangController::dinhDangNgayGio($dh['thoi_gian_tao'])); ?></td>
                             <td><?php echo e(DonHangController::hienMaNhanVien($dh['ma_nhan_vien'])); ?></td>
                             <td class="text-right" id="tong-tien-<?php echo (int)$dh['ma_hoa_don']; ?>"><?php echo e(DonHangController::dinhDangTien($dh['tong_tien'])); ?></td>
-                            <td><span class="badge<?php echo $tt['lop'] !== '' ? ' badge-' . e($tt['lop']) : ''; ?>"><?php echo e($tt['nhan']); ?></span></td>
+                            <td id="trang-thai-<?php echo (int)$dh['ma_hoa_don']; ?>"><span class="badge<?php echo $tt['lop'] !== '' ? ' badge-' . e($tt['lop']) : ''; ?>"><?php echo e($tt['nhan']); ?></span></td>
                             <td>
-                                <button type="button" class="primary btn-nho"
-                                        onclick="moChiTiet(<?php echo (int)$dh['ma_hoa_don']; ?>);">Xem chi tiết</button>
+                                <div class="nhom-nut">
+                                    <button type="button" class="primary btn-nho"
+                                            onclick="moChiTiet(<?php echo (int)$dh['ma_hoa_don']; ?>);">Xem chi tiết</button>
+                                    <?php if (DonHangController::laChuaThanhToan($dh['trang_thai'])): ?>
+                                        <button type="button" class="danger btn-nho" id="nut-huy-<?php echo (int)$dh['ma_hoa_don']; ?>"
+                                                onclick="moHuyDon(<?php echo (int)$dh['ma_hoa_don']; ?>, '<?php echo e(DonHangController::hienMaHoaDon($dh['ma_hoa_don'])); ?>');">Hủy đơn</button>
+                                    <?php endif; ?>
+                                </div>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -152,7 +164,7 @@ function e($s)
                 <input type="number" id="nhap-so-luong" min="1" step="1" value="1">
                 <div class="hang-nut">
                     <button type="button" class="secondary" onclick="huyThem();">Hủy</button>
-                    <button type="button" class="success" id="nut-xac-nhan-them" onclick="xacNhanThem();">Xác nhận thêm</button>
+                    <button type="button" class="success nut-gui" id="nut-xac-nhan-them" onclick="xacNhanThem();">Xác nhận thêm</button>
                 </div>
             </div>
 
@@ -162,13 +174,71 @@ function e($s)
                 <p>Bạn có chắc muốn xóa <b id="xoa-ten-san-pham"></b> khỏi đơn hàng này?</p>
                 <div class="hang-nut">
                     <button type="button" class="secondary" onclick="tuChoiXoa();">Từ chối</button>
-                    <button type="button" class="danger" id="nut-xac-nhan-xoa" onclick="xacNhanXoa();">Xác nhận</button>
+                    <button type="button" class="danger nut-gui" id="nut-xac-nhan-xoa" onclick="xacNhanXoa();">Xác nhận</button>
+                </div>
+            </div>
+
+            <!-- UC37: tạo yêu cầu hoàn trả -->
+            <div id="khung-hoan-tra" class="khung-phu">
+                <h4>Tạo yêu cầu hoàn trả</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Sản phẩm</th>
+                            <th class="text-right">Đã mua</th>
+                            <th class="text-right">Có thể hoàn</th>
+                            <th class="text-right">SL hoàn trả</th>
+                        </tr>
+                    </thead>
+                    <tbody id="hoan-tra-dong"></tbody>
+                </table>
+                <label for="hoan-tra-ly-do">Lý do hoàn trả</label>
+                <textarea id="hoan-tra-ly-do" rows="3" maxlength="255" placeholder="Nhập lý do hoàn trả"></textarea>
+                <div class="hang-nut">
+                    <button type="button" class="secondary" onclick="huyHoanTra();">Hủy</button>
+                    <button type="button" class="success nut-gui" onclick="xacNhanHoanTra();">Xác nhận</button>
                 </div>
             </div>
 
             <div class="modal-actions">
-                <button type="button" class="primary" id="nut-them-san-pham" style="display:none;" onclick="moFormThem();">+ Thêm sản phẩm</button>
+                <div style="display:flex;gap:10px;">
+                    <button type="button" class="primary" id="nut-them-san-pham" style="display:none;" onclick="moFormThem();">+ Thêm sản phẩm</button>
+                    <button type="button" class="warn" id="nut-hoan-tra" style="display:none;" onclick="moFormHoanTra();">Tạo yêu cầu hoàn trả</button>
+                </div>
                 <button type="button" class="secondary" style="margin-left:auto;" onclick="dongChiTiet();">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- UC33: hủy đơn hàng -->
+    <div id="modal-huy-don" class="modal" onclick="if (event.target === this) { dongHuyDon(); }">
+        <div class="modal-box" style="width: 480px;">
+            <h3>Hủy đơn hàng <span id="huy-ma-hoa-don"></span></h3>
+            <div id="huy-thong-bao"></div>
+
+            <div id="huy-buoc-nhap" class="khung-phu" style="display:block;">
+                <label for="huy-chon-ly-do">Chọn lý do</label>
+                <select id="huy-chon-ly-do" onchange="chonLyDoMau();">
+                    <option value="">-- Chọn lý do có sẵn hoặc nhập bên dưới --</option>
+                    <option value="Khách đổi ý">Khách đổi ý</option>
+                    <option value="Khách không chuyển khoản">Khách không chuyển khoản</option>
+                    <option value="Nhập sai sản phẩm">Nhập sai sản phẩm</option>
+                    <option value="Hết hàng">Hết hàng</option>
+                </select>
+                <label for="huy-ly-do">Lý do hủy</label>
+                <textarea id="huy-ly-do" rows="3" maxlength="255" placeholder="Nhập lý do hủy"></textarea>
+                <div class="hang-nut">
+                    <button type="button" class="secondary" onclick="dongHuyDon();">Đóng</button>
+                    <button type="button" class="danger" onclick="yeuCauXacNhanHuy();">Hủy đơn hàng</button>
+                </div>
+            </div>
+
+            <div id="huy-buoc-xac-nhan" class="khung-phu">
+                <p>Bạn có chắc muốn hủy đơn hàng <b id="huy-ma-xac-nhan"></b> với lý do: <b id="huy-ly-do-hien-thi"></b>?</p>
+                <div class="hang-nut">
+                    <button type="button" class="secondary" onclick="khongHuy();">Không</button>
+                    <button type="button" class="danger nut-gui" onclick="xacNhanHuy();">Xác nhận hủy</button>
+                </div>
             </div>
         </div>
     </div>
@@ -197,14 +267,18 @@ function e($s)
                 ? '<div class="alert alert-' + loai + '">' + esc(noiDung) + '</div>' : '';
         }
 
+        function cat(s) { return String(s).replace(/^\s+|\s+$/g, ''); }
+
         function anCacKhung() {
             $('khung-them').style.display = 'none';
             $('khung-xoa').style.display = 'none';
+            $('khung-hoan-tra').style.display = 'none';
         }
 
         function hienLoi(thongBao) {
             $('modal-noi-dung').innerHTML = '<div class="alert alert-error">' + esc(thongBao) + '</div>';
             $('nut-them-san-pham').style.display = 'none';
+            $('nut-hoan-tra').style.display = 'none';
         }
 
         // ---- Xem chi tiết (UC28) ----
@@ -216,6 +290,7 @@ function e($s)
             hienThongBao('', '');
             $('modal-ma-hoa-don').innerHTML = '';
             $('nut-them-san-pham').style.display = 'none';
+            $('nut-hoan-tra').style.display = 'none';
             $('modal-noi-dung').innerHTML = '<div class="dang-tai">Đang tải dữ liệu...</div>';
             $('modal-chi-tiet').style.display = 'flex';
             taiChiTiet(id, '');
@@ -290,6 +365,7 @@ function e($s)
 
             $('modal-noi-dung').innerHTML = html;
             $('nut-them-san-pham').style.display = choSua ? '' : 'none';
+            $('nut-hoan-tra').style.display = hd.cho_hoan_tra ? '' : 'none';
 
             // Tổng tiền ở danh sách phía sau modal cũng được cập nhật theo.
             var oTong = $('tong-tien-' + hd.id);
@@ -306,12 +382,11 @@ function e($s)
         function guiYeuCau(thamSo, khiXong) {
             if (dangGui) { return; }
             dangGui = true;
-            $('nut-xac-nhan-them').disabled = true;
-            $('nut-xac-nhan-xoa').disabled = true;
+            khoaNutGui(true);
 
             var body = 'token=' + encodeURIComponent(CSRF_TOKEN);
             for (var k in thamSo) {
-                if (thamSo.hasOwnProperty(k)) { body += '&' + k + '=' + encodeURIComponent(thamSo[k]); }
+                if (thamSo.hasOwnProperty(k)) { body += '&' + encodeURIComponent(k) + '=' + encodeURIComponent(thamSo[k]); }
             }
 
             fetch(URL_SUA, {
@@ -327,13 +402,18 @@ function e($s)
                     khiXong(kq);
                 })
                 .catch(function () {
-                    hienThongBao('error', 'Không thể thực hiện thao tác, vui lòng thử lại.');
+                    khiXong({ ok: false, message: 'Không thể thực hiện thao tác, vui lòng thử lại.' });
                 })
                 .then(function () {
                     dangGui = false;
-                    $('nut-xac-nhan-them').disabled = false;
-                    $('nut-xac-nhan-xoa').disabled = false;
+                    khoaNutGui(false);
                 });
+        }
+
+        // Khóa / mở các nút xác nhận (class nut-gui) trong lúc đang gửi yêu cầu.
+        function khoaNutGui(khoa) {
+            var ds = document.querySelectorAll('.nut-gui');
+            for (var i = 0; i < ds.length; i++) { ds[i].disabled = khoa; }
         }
 
         // ---- UC31: thêm sản phẩm ----
@@ -404,9 +484,148 @@ function e($s)
             });
         }
 
+        // ---- UC37: tạo yêu cầu hoàn trả ----
+        function moFormHoanTra() {
+            if (!chiTietHienTai) { return; }
+            anCacKhung();
+            hienThongBao('', '');
+
+            var ds = chiTietHienTai.chi_tiet || [];
+            var html = '';
+            for (var i = 0; i < ds.length; i++) {
+                var ct = ds[i];
+                var conLai = ct.so_luong - ct.da_yeu_cau_hoan;
+                if (conLai < 0) { conLai = 0; }
+                html += '<tr>'
+                    + '<td>' + esc(ct.ma_san_pham + ' - ' + ct.ten_san_pham) + '</td>'
+                    + '<td class="text-right">' + esc(ct.so_luong) + '</td>'
+                    + '<td class="text-right">' + esc(conLai) + '</td>'
+                    + '<td class="text-right"><input type="number" class="o-so-luong-hoan" min="0" max="' + conLai + '" step="1" value="0"'
+                    + ' data-ma="' + esc(ct.id_san_pham) + '" data-max="' + conLai + '"' + (conLai === 0 ? ' disabled' : '') + '></td>'
+                    + '</tr>';
+            }
+            $('hoan-tra-dong').innerHTML = html;
+            $('hoan-tra-ly-do').value = '';
+            $('khung-hoan-tra').style.display = 'block';
+        }
+
+        function huyHoanTra() {
+            $('khung-hoan-tra').style.display = 'none';
+            hienThongBao('', '');
+        }
+
+        function xacNhanHoanTra() {
+            var o = document.querySelectorAll('#hoan-tra-dong input.o-so-luong-hoan');
+            var tham = { action: 'hoan_tra', ma_hoa_don: maDangMo };
+            var coSanPham = false;
+
+            for (var i = 0; i < o.length; i++) {
+                var v = cat(o[i].value);
+                if (v === '') { continue; }
+                if (!/^[0-9]+$/.test(v)) {
+                    hienThongBao('error', 'Số lượng hoàn trả phải là số nguyên không âm.');
+                    return;
+                }
+                if (parseInt(v, 10) > parseInt(o[i].getAttribute('data-max'), 10)) {
+                    hienThongBao('error', 'Số lượng hoàn trả vượt quá số lượng có thể hoàn.');
+                    return;
+                }
+                if (parseInt(v, 10) > 0) {
+                    tham['so_luong[' + o[i].getAttribute('data-ma') + ']'] = v;
+                    coSanPham = true;
+                }
+            }
+            if (!coSanPham) {
+                hienThongBao('error', 'Vui lòng chọn ít nhất một sản phẩm và nhập số lượng cần hoàn trả.');
+                return;
+            }
+            var lyDo = cat($('hoan-tra-ly-do').value);
+            if (lyDo === '') {
+                hienThongBao('error', 'Vui lòng nhập lý do hoàn trả.');
+                return;
+            }
+            tham.ly_do = lyDo;
+
+            guiYeuCau(tham, function (kq) {
+                if (kq.ok) {
+                    anCacKhung();
+                    taiChiTiet(maDangMo, kq.message);
+                } else {
+                    hienThongBao('error', kq.message); // luồng 10.1: báo lỗi, giữ lại form để sửa
+                }
+            });
+        }
+
+        // ---- UC33: hủy đơn hàng ----
+        var maDonCanHuy = 0;
+        var lyDoCanHuy = '';
+
+        function hienThongBaoTrang(loai, noiDung) {
+            $('thong-bao-trang').innerHTML = '<div class="alert alert-' + loai + '">' + esc(noiDung) + '</div>';
+            window.scrollTo(0, 0);
+        }
+
+        function moHuyDon(id, maHienThi) {
+            maDonCanHuy = id;
+            $('huy-ma-hoa-don').textContent = maHienThi;
+            $('huy-ma-xac-nhan').textContent = maHienThi;
+            $('huy-thong-bao').innerHTML = '';
+            $('huy-chon-ly-do').value = '';
+            $('huy-ly-do').value = '';
+            $('huy-buoc-nhap').style.display = 'block';
+            $('huy-buoc-xac-nhan').style.display = 'none';
+            $('modal-huy-don').style.display = 'flex';
+            $('huy-ly-do').focus();
+        }
+
+        function chonLyDoMau() {
+            $('huy-ly-do').value = $('huy-chon-ly-do').value;
+            $('huy-ly-do').focus();
+        }
+
+        // Bước 7-8: nhập lý do rồi hệ thống yêu cầu xác nhận.
+        function yeuCauXacNhanHuy() {
+            var lyDo = cat($('huy-ly-do').value);
+            if (lyDo === '') {
+                $('huy-thong-bao').innerHTML = '<div class="alert alert-error">Vui lòng nhập hoặc chọn lý do hủy.</div>';
+                return;
+            }
+            lyDoCanHuy = lyDo;
+            $('huy-thong-bao').innerHTML = '';
+            $('huy-ly-do-hien-thi').textContent = lyDo;
+            $('huy-buoc-nhap').style.display = 'none';
+            $('huy-buoc-xac-nhan').style.display = 'block';
+        }
+
+        function khongHuy() { // luồng 9.1: giữ nguyên đơn hàng, quay lại danh sách
+            dongHuyDon();
+        }
+
+        function dongHuyDon() {
+            $('modal-huy-don').style.display = 'none';
+        }
+
+        function xacNhanHuy() {
+            guiYeuCau({ action: 'huy_don', ma_hoa_don: maDonCanHuy, ly_do: lyDoCanHuy }, function (kq) {
+                if (kq.ok) {
+                    dongHuyDon();
+                    var oTrangThai = $('trang-thai-' + maDonCanHuy);
+                    if (oTrangThai) { oTrangThai.innerHTML = '<span class="badge badge-danger">Đã hủy</span>'; }
+                    var nut = $('nut-huy-' + maDonCanHuy);
+                    if (nut) { nut.parentNode.removeChild(nut); }
+                    hienThongBaoTrang('success', kq.message);
+                } else {
+                    // luồng 10.1: báo lỗi, đơn hàng giữ nguyên
+                    $('huy-buoc-xac-nhan').style.display = 'none';
+                    $('huy-buoc-nhap').style.display = 'block';
+                    $('huy-thong-bao').innerHTML = '<div class="alert alert-error">' + esc(kq.message) + '</div>';
+                }
+            });
+        }
+
         document.onkeydown = function (ev) {
             ev = ev || window.event;
-            if (ev.keyCode === 27) { dongChiTiet(); }
+            if (ev.keyCode === 27) { dongChiTiet(); dongHuyDon(); }
         };
     </script>
 

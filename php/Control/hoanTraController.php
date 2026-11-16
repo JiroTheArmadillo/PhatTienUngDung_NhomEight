@@ -70,6 +70,26 @@ class HoanTraController
         }
     }
 
+    /** Xem chi tiết 1 yêu cầu: du_lieu = array('yeu_cau' => ..., 'chi_tiet' => array(...)). */
+    public function layChiTiet($maYeuCau)
+    {
+        $maYeuCau = (int)$maYeuCau;
+        if ($maYeuCau <= 0) {
+            return $this->ketQua(false, 'Mã yêu cầu hoàn trả không hợp lệ.');
+        }
+
+        try {
+            $yeuCau = $this->repo->layThongTin($maYeuCau);
+            if ($yeuCau === null) {
+                return $this->ketQua(false, 'Không tìm thấy yêu cầu hoàn trả.');
+            }
+            return $this->ketQua(true, '', array('yeu_cau' => $yeuCau, 'chi_tiet' => $this->repo->layChiTiet($maYeuCau)));
+        } catch (Exception $e) {
+            error_log('[HoanTra] ' . $e->getMessage());
+            return $this->ketQua(false, 'Không thể tải chi tiết yêu cầu hoàn trả.');
+        }
+    }
+
     // ---------------- Hàm hỗ trợ ----------------
 
     /** null nếu yêu cầu tồn tại và đang chờ duyệt, ngược lại trả về thông báo lỗi. */
@@ -101,8 +121,8 @@ class HoanTraController
         return $this->ketQua(false, 'Có lỗi hệ thống khi xử lý yêu cầu, vui lòng thử lại.');
     }
 
-    private function ketQua($ok, $message)
+    private function ketQua($ok, $message, $duLieu = null)
     {
-        return array('ok' => $ok, 'message' => $message);
+        return array('ok' => $ok, 'message' => $message, 'du_lieu' => $duLieu);
     }
 }

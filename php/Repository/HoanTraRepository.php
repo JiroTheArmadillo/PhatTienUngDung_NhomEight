@@ -1,7 +1,7 @@
 <?php
 /**
  * Repository: truy cập CSDL cho chức năng "Xử lý yêu cầu hoàn trả".
- * Bảng sử dụng: PhieuYeuCauTraHang, ChiTietPhieuYeuCauTraHang.
+ * Bảng sử dụng: PhieuYeuCauTraHang, ChiTietPhieuYeuCauTraHang (+ ChiTietHoaDon, SanPham, NhanVien để xem chi tiết).
  * Tương thích PHP 5.2.6 + MySQL 5.0 (MySQLi).
  */
 require_once dirname(__FILE__) . '/../../db.php';
@@ -55,5 +55,35 @@ class HoanTraRepository
             array($trangThaiMoi, $lyDoTuChoi, $maNguoiXuLy, (int)$maYeuCau, $trangThaiHienTai)
         );
         return eightmart_mysqli_affected_rows($stmt) > 0;
+    }
+
+    /** Thông tin 1 yêu cầu hoàn trả kèm tên nhân viên tạo / xử lý, null nếu không tồn tại. */
+    public function layThongTin($maYeuCau)
+    {
+        $sql = "SELECT y.ID AS ma_yeu_cau, y.HoaDonID AS ma_hoa_don,
+                       y.LyDoHoanTra AS ly_do_hoan_tra, y.LyDoTuChoi AS ly_do_tu_choi,
+                       y.TrangThai AS trang_thai, y.NgayTao AS ngay_tao, y.NgayXuLy AS ngay_xu_ly,
+                       y.KhachHangID AS ma_khach_hang,
+                       nv.Ten AS ten_nhan_vien_tao, nx.Ten AS ten_nhan_vien_xu_ly
+                  FROM PhieuYeuCauTraHang y
+                  LEFT JOIN NhanVien nv ON nv.ID = y.NhanVienID
+                  LEFT JOIN NhanVien nx ON nx.ID = y.NhanVienXuLyID
+                 WHERE y.ID = ?";
+        $stmt = eightmart_mysqli_execute($sql, array((int)$maYeuCau));
+        return eightmart_mysqli_fetch_one_assoc($stmt);
+    }
+
+    /** Các sản phẩm của yêu cầu, kèm số lượng đã mua và đơn giá trên hóa đơn. */
+    public function layChiTiet($maYeuCau)
+    {
+        $sql = "SELECT c.SanPhamID AS ma_san_pham, sp.TenSanPham AS ten_san_pham,
+                       c.SoLuong AS so_luong_hoan, h.SoLuong AS so_luong_mua, h.DonGia AS don_gia
+                  FROM ChiTietPhieuYeuCauTraHang c
+                 INNER JOIN ChiTietHoaDon h ON h.HoaDonID = c.HoaDonID AND h.SanPhamID = c.SanPhamID
+                 INNER JOIN SanPham sp ON sp.ID = c.SanPhamID
+                 WHERE c.PhieuYeuCauTraHangID = ?
+                 ORDER BY c.SanPhamID";
+        $stmt = eightmart_mysqli_execute($sql, array((int)$maYeuCau));
+        return eightmart_mysqli_fetch_all_assoc($stmt);
     }
 }

@@ -1,7 +1,11 @@
 <?php
 /**
- * Endpoint POST: thêm / xóa sản phẩm khỏi đơn hàng (UC31, UC32).
- * Tham số: token (CSRF), action = them | xoa, ma_hoa_don, ma_san_pham, so_luong (chỉ khi thêm).
+ * Endpoint POST thao tác ghi trên đơn hàng từ modal ở GD_DanhSachDonHang.php:
+ *   action = them      : thêm sản phẩm (UC31)   - ma_hoa_don, ma_san_pham, so_luong
+ *   action = xoa       : xóa sản phẩm (UC32)    - ma_hoa_don, ma_san_pham
+ *   action = huy_don   : hủy đơn hàng (UC33)    - ma_hoa_don, ly_do
+ *   action = hoan_tra  : tạo yêu cầu hoàn trả (UC37) - ma_hoa_don, ly_do, so_luong[<mã sản phẩm>]
+ * Tất cả kèm token (CSRF).
  * Trả JSON: array('ok' => bool, 'message' => string).
  */
 ini_set('display_errors', '0'); // tránh lỗi/notice PHP làm hỏng JSON
@@ -48,6 +52,16 @@ if ($hanhDong === 'them') {
     $kq = $controller->themSanPham($maHoaDon, $maSanPham, $soLuong);
 } elseif ($hanhDong === 'xoa') {
     $kq = $controller->xoaSanPham($maHoaDon, $maSanPham);
+} elseif ($hanhDong === 'huy_don') {
+    $kq = $controller->huyDonHang($maHoaDon, isset($_POST['ly_do']) ? $_POST['ly_do'] : '');
+} elseif ($hanhDong === 'hoan_tra') {
+    $dsSoLuong = (isset($_POST['so_luong']) && is_array($_POST['so_luong'])) ? $_POST['so_luong'] : array();
+    $kq = $controller->taoYeuCauHoanTra(
+        $maHoaDon,
+        $dsSoLuong,
+        isset($_POST['ly_do']) ? $_POST['ly_do'] : '',
+        isset($nguoiDung['ma_nhan_vien']) ? (int)$nguoiDung['ma_nhan_vien'] : 0
+    );
 } else {
     baoLoi('Thao tác không hợp lệ.');
 }

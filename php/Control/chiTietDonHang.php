@@ -52,7 +52,8 @@ foreach ($kq['du_lieu']['chi_tiet'] as $ct) {
         'ten_san_pham' => (string)$ct['ten_san_pham'],
         'so_luong' => (int)$ct['so_luong'],
         'don_gia' => DonHangController::dinhDangTien($ct['don_gia']),
-        'thanh_tien' => DonHangController::dinhDangTien($ct['thanh_tien'])
+        'thanh_tien' => DonHangController::dinhDangTien($ct['thanh_tien']),
+        'da_yeu_cau_hoan' => (int)$ct['da_yeu_cau_hoan']
     );
 }
 
@@ -83,7 +84,9 @@ traVeJson(array(
         'ma_nhan_vien' => DonHangController::hienMaNhanVien($hd['ma_nhan_vien']),
         'ma_khach_hang' => DonHangController::hienMaKhachHang($hd['ma_khach_hang']),
         'ma_ca' => (int)$hd['ma_ca'],
-        'cho_sua' => $choSua
+        'cho_sua' => $choSua,
+        // Đơn đã thanh toán mới được tạo yêu cầu hoàn trả (UC37).
+        'cho_hoan_tra' => DonHangController::choPhepSua($nguoiDung) && DonHangController::laDaThanhToan($hd['trang_thai'])
     ),
     'chi_tiet' => $dsChiTiet,
     'san_pham_them' => $dsSanPham

@@ -172,7 +172,6 @@ function hienTrangThai($tt)
     <div class="sidebar">
          <div class="logo">EIGHT STORE</div>
          <a href="GD_TrangChu.php">dashboard</a>
-         <a href="GD_QuanLyCaLamViec.php">Quản lý ca làm việc</a>
          <a href="GD_QuanLyBanHang.php">Quản lý Bán Hàng</a>
         <a href="GD_QuanLyNhanVien.php" <?php $nguoiDung['vai_tro'] !=='QuanLy' ? 'style:"pointer-events:none;"' : '' ?>>quản lý nhân viên</a>
         <a href="GD_QuanLyNhaCungCap.php">quản lý nhà cung cấp</a>
@@ -219,7 +218,6 @@ function hienTrangThai($tt)
                 <?php endif; ?>
  
                 <?php foreach ($danhSach as $yc): ?>
-                    <?php $choDuyet = (trim($yc['trang_thai']) === HoanTraController::CHO_DUYET); ?>
                     <tr>
                         <td><?php echo e(hienMaYeuCau($yc['ma_yeu_cau'])); ?></td>
                         <td><?php echo e(hienMaHoaDon($yc['ma_hoa_don'])); ?></td>
@@ -232,19 +230,8 @@ function hienTrangThai($tt)
                             <?php endif; ?>
                         </td>
                         <td>
-                            <?php if ($choDuyet): ?>
-                                <div class="actions">
-                                    <form method="post" action="../php/Control/xuLyHoanTra.php">
-                                        <input type="hidden" name="id" value="<?php echo (int)$yc['ma_yeu_cau']; ?>">
-                                        <input type="hidden" name="action" value="accept">
-                                        <button type="submit" class="btn btn-success" style="padding: 5px 10px;">Chấp nhận</button>
-                                    </form>
-                                    <button type="button" class="btn btn-danger" style="padding: 5px 10px;"
-                                            onclick="moFormTuChoi(<?php echo (int)$yc['ma_yeu_cau']; ?>, '<?php echo e(hienMaYeuCau($yc['ma_yeu_cau'])); ?>');">Từ chối</button>
-                                </div>
-                            <?php else: ?>
-                                <span style="color:#999;">—</span>
-                            <?php endif; ?>
+                            <button type="button" class="btn btn-primary" style="padding: 5px 10px;"
+                                    onclick="moChiTiet(<?php echo (int)$yc['ma_yeu_cau']; ?>);">Xem chi tiết</button>
                         </td>
                     </tr>
                 <?php endforeach; ?>
@@ -253,44 +240,169 @@ function hienTrangThai($tt)
         </div>
     </div>
  
-    <!-- Form nhập lý do từ chối (hiện khi bấm "Từ chối") -->
-    <div id="modal-tu-choi" class="modal" style="display: none;">
-        <div class="modal-box">
-            <h3>Từ chối yêu cầu hoàn trả <span id="modal-ma-yeu-cau"></span></h3>
-            <form method="post" action="../php/Control/xuLyHoanTra.php" onsubmit="return kiemTraLyDo();">
-                <input type="hidden" name="id" id="modal-id" value="">
+    <!-- Modal chi tiết yêu cầu hoàn trả: xem thông tin, chấp nhận hoặc từ chối -->
+    <div id="modal-chi-tiet" class="modal" style="display: none;" onclick="if (event.target === this) { dongChiTiet(); }">
+        <div class="modal-box" style="width: 760px; max-height: 90%; overflow-y: auto;">
+            <h3>Chi tiết yêu cầu hoàn trả <span id="ct-ma-yeu-cau"></span></h3>
+            <div id="ct-noi-dung"></div>
+
+            <!-- Nhập lý do từ chối (hiện khi bấm "Từ chối") -->
+            <form id="form-tu-choi" method="post" action="../php/Control/xuLyHoanTra.php" onsubmit="return kiemTraLyDo();" style="display: none; margin-top: 15px;">
+                <input type="hidden" name="id" id="tu-choi-id" value="">
                 <input type="hidden" name="action" value="reject">
                 <label for="modal-ly-do">Lý do từ chối</label>
-                <textarea name="ly_do_tu_choi" id="modal-ly-do" rows="4" maxlength="500"></textarea>
+                <textarea name="ly_do_tu_choi" id="modal-ly-do" rows="4" maxlength="255"></textarea>
                 <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary" onclick="dongFormTuChoi();">Hủy</button>
-                    <button type="submit" class="btn btn-danger">Xác nhận</button>
+                    <button type="button" class="btn btn-secondary" onclick="dongLyDoTuChoi();">Hủy</button>
+                    <button type="submit" class="btn btn-danger">Xác nhận từ chối</button>
                 </div>
             </form>
+
+            <div id="ct-hanh-dong" class="modal-actions" style="display: flex; justify-content: space-between; align-items: center;">
+                <div style="display: flex; gap: 8px;">
+                    <form id="form-chap-nhan" method="post" action="../php/Control/xuLyHoanTra.php" style="display: none;">
+                        <input type="hidden" name="id" id="chap-nhan-id" value="">
+                        <input type="hidden" name="action" value="accept">
+                        <button type="submit" class="btn btn-success" style="margin-left: 0;">Chấp nhận</button>
+                    </form>
+                    <button type="button" id="nut-tu-choi" class="btn btn-danger" style="display: none; margin-left: 0;" onclick="moLyDoTuChoi();">Từ chối</button>
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="dongChiTiet();">Đóng</button>
+            </div>
         </div>
     </div>
- 
+
     <script>
-        function moFormTuChoi(id, maHienThi) {
-            document.getElementById('modal-id').value = id;
-            document.getElementById('modal-ma-yeu-cau').innerHTML = maHienThi;
-            document.getElementById('modal-ly-do').value = '';
-            document.getElementById('modal-tu-choi').style.display = 'flex';
-            document.getElementById('modal-ly-do').focus();
+        var URL_CHI_TIET = '../php/Control/chiTietHoanTra.php';
+        var lanGoi = 0;      // bỏ qua kết quả của lần mở cũ nếu người dùng mở yêu cầu khác quá nhanh
+        var maDangMo = 0;
+
+        function $(id) { return document.getElementById(id); }
+
+        function esc(s) {
+            if (s === null || s === undefined) { s = ''; }
+            return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         }
-        function dongFormTuChoi() {
-            document.getElementById('modal-tu-choi').style.display = 'none';
+
+        function hienLoi(thongBao) {
+            $('ct-noi-dung').innerHTML = '<div class="alert alert-error">' + esc(thongBao) + '</div>';
+            $('form-chap-nhan').style.display = 'none';
+            $('nut-tu-choi').style.display = 'none';
         }
+
+        function moChiTiet(id) {
+            var luot = ++lanGoi;
+            maDangMo = id;
+            $('ct-ma-yeu-cau').innerHTML = '';
+            $('form-tu-choi').style.display = 'none';
+            $('ct-hanh-dong').style.display = 'flex';
+            $('form-chap-nhan').style.display = 'none';
+            $('nut-tu-choi').style.display = 'none';
+            $('ct-noi-dung').innerHTML = '<p style="text-align:center;color:#888;padding:25px;">Đang tải dữ liệu...</p>';
+            $('modal-chi-tiet').style.display = 'flex';
+
+            fetch(URL_CHI_TIET + '?id=' + encodeURIComponent(id), { credentials: 'same-origin' })
+                .then(function (res) { return res.text(); })
+                .then(function (text) {
+                    if (luot !== lanGoi) { return; }
+                    var kq;
+                    try { kq = JSON.parse(text); } catch (err) { throw new Error('Phản hồi không hợp lệ'); }
+                    if (!kq.ok) { hienLoi(kq.message); return; }
+                    veChiTiet(kq);
+                })
+                .catch(function () {
+                    if (luot !== lanGoi) { return; }
+                    hienLoi('Không thể tải chi tiết yêu cầu hoàn trả.');
+                });
+        }
+
+        function veChiTiet(kq) {
+            var yc = kq.yeu_cau;
+            var html = '';
+
+            $('ct-ma-yeu-cau').innerHTML = esc(yc.ma_yeu_cau);
+
+            html += '<div style="margin-bottom:10px;line-height:1.9;font-size:14px;">';
+            html += 'Hóa đơn: <b>' + esc(yc.ma_hoa_don) + '</b> &nbsp;|&nbsp; ';
+            html += 'Khách hàng: <b>' + esc(yc.ma_khach_hang) + '</b><br>';
+            html += 'Ngày tạo: <b>' + esc(yc.ngay_tao) + '</b>';
+            if (yc.nhan_vien_tao) { html += ' &nbsp;|&nbsp; Nhân viên tạo: <b>' + esc(yc.nhan_vien_tao) + '</b>'; }
+            html += '<br>Trạng thái: <span class="badge' + (yc.lop_trang_thai ? ' badge-' + esc(yc.lop_trang_thai) : '') + '">'
+                 + esc(yc.trang_thai) + '</span><br>';
+            html += 'Lý do hoàn trả: <b>' + esc(yc.ly_do_hoan_tra) + '</b>';
+            if (yc.ly_do_tu_choi) { html += '<br>Lý do từ chối: <b style="color:#c0392b;">' + esc(yc.ly_do_tu_choi) + '</b>'; }
+            if (yc.ngay_xu_ly) {
+                html += '<br>Xử lý lúc: <b>' + esc(yc.ngay_xu_ly) + '</b>';
+                if (yc.nhan_vien_xu_ly) { html += ' bởi <b>' + esc(yc.nhan_vien_xu_ly) + '</b>'; }
+            }
+            html += '</div>';
+
+            html += '<table><thead><tr>'
+                 + '<th>Mã SP</th><th>Tên sản phẩm</th>'
+                 + '<th style="text-align:right;">Đã mua</th><th style="text-align:right;">Hoàn trả</th>'
+                 + '<th style="text-align:right;">Đơn giá</th><th style="text-align:right;">Thành tiền</th>'
+                 + '</tr></thead><tbody>';
+            if (!kq.chi_tiet || kq.chi_tiet.length === 0) {
+                html += '<tr><td colspan="6" class="empty">Yêu cầu chưa có sản phẩm.</td></tr>';
+            } else {
+                for (var i = 0; i < kq.chi_tiet.length; i++) {
+                    var ct = kq.chi_tiet[i];
+                    html += '<tr>'
+                        + '<td>' + esc(ct.ma_san_pham) + '</td>'
+                        + '<td>' + esc(ct.ten_san_pham) + '</td>'
+                        + '<td style="text-align:right;">' + esc(ct.so_luong_mua) + '</td>'
+                        + '<td style="text-align:right;">' + esc(ct.so_luong_hoan) + '</td>'
+                        + '<td style="text-align:right;">' + esc(ct.don_gia) + '</td>'
+                        + '<td style="text-align:right;">' + esc(ct.thanh_tien) + '</td>'
+                        + '</tr>';
+                }
+            }
+            html += '<tr style="background:#f8f9fa;font-weight:700;"><td colspan="5" style="text-align:right;">Tổng tiền hoàn trả</td>'
+                 + '<td style="text-align:right;">' + esc(kq.tong_hoan) + '</td></tr>';
+            html += '</tbody></table>';
+
+            $('ct-noi-dung').innerHTML = html;
+
+            // Chỉ yêu cầu đang chờ xử lý mới có thao tác chấp nhận / từ chối.
+            $('chap-nhan-id').value = yc.id;
+            $('tu-choi-id').value = yc.id;
+            $('form-chap-nhan').style.display = yc.cho_duyet ? 'block' : 'none';
+            $('nut-tu-choi').style.display = yc.cho_duyet ? 'inline-block' : 'none';
+        }
+
+        function dongChiTiet() {
+            lanGoi++;
+            $('form-tu-choi').style.display = 'none';
+            $('modal-chi-tiet').style.display = 'none';
+        }
+
+        function moLyDoTuChoi() {
+            $('modal-ly-do').value = '';
+            $('ct-hanh-dong').style.display = 'none';
+            $('form-tu-choi').style.display = 'block';
+            $('modal-ly-do').focus();
+        }
+
+        function dongLyDoTuChoi() {
+            $('form-tu-choi').style.display = 'none';
+            $('ct-hanh-dong').style.display = 'flex';
+        }
+
         function kiemTraLyDo() {
-            var lyDo = document.getElementById('modal-ly-do').value.replace(/^\s+|\s+$/g, '');
+            var lyDo = $('modal-ly-do').value.replace(/^\s+|\s+$/g, '');
             if (lyDo === '') {
                 alert('Vui lòng nhập lý do từ chối.');
                 return false;
             }
             return true;
         }
+
+        document.onkeydown = function (ev) {
+            ev = ev || window.event;
+            if (ev.keyCode === 27) { dongChiTiet(); }
+        };
     </script>
  
 </body>
 </html>
- 
