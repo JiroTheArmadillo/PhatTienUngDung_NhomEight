@@ -138,6 +138,11 @@ function e($s)
                                         <button type="button" class="danger btn-nho" id="nut-huy-<?php echo (int)$dh['ma_hoa_don']; ?>"
                                                 onclick="moHuyDon(<?php echo (int)$dh['ma_hoa_don']; ?>, '<?php echo e(DonHangController::hienMaHoaDon($dh['ma_hoa_don'])); ?>');">Hủy đơn</button>
                                     <?php endif; ?>
+                                    <?php if (DonHangController::laDaThanhToan($dh['trang_thai'])): ?>
+                                        <!-- UC34: dùng lại trang in hóa đơn có sẵn ở ThanhToan/hoadon.php -->
+                                        <a class="btn success btn-nho" target="_blank" rel="noopener"
+                                           href="../ThanhToan/hoadon.php?id=<?php echo (int)$dh['ma_hoa_don']; ?>">Xuất hóa đơn</a>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>
