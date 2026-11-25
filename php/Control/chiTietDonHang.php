@@ -6,6 +6,7 @@
  */
 ini_set('display_errors', '0'); // tránh lỗi/notice PHP làm hỏng JSON
 
+require_once dirname(__FILE__) . '/../../db.php';
 require_once dirname(__FILE__) . '/donHangController.php';
 require_once dirname(__FILE__) . '/../XacThuc.php';
 
@@ -38,11 +39,24 @@ if (!$kq['ok']) {
     baoLoi($kq['message']);
 }
 
-$hd = $kq['du_lieu']['hoa_don'];
+$duLieu = $kq['du_lieu'];
+$hd = $duLieu['hoa_don'];
 $tt = DonHangController::trangThaiHienThi($hd['trang_thai']);
 
+$km = isset($duLieu['khuyen_mai']) ? $duLieu['khuyen_mai'] : null;
+$tamTinh = isset($duLieu['tam_tinh']) ? (float)$duLieu['tam_tinh'] : (float)$hd['tong_tien'];
+$tienGiam = isset($duLieu['tien_giam']) ? (float)$duLieu['tien_giam'] : 0;
+
+$coKhuyenMai = false;
+if ($km !== null) {
+    $coKhuyenMai = true;
+} elseif ($tienGiam > 0) {
+    $coKhuyenMai = true;
+}
+$tenKm = ($km !== null && isset($km['TenChuongTrinh'])) ? (string)$km['TenChuongTrinh'] : '';
+
 $dsChiTiet = array();
-foreach ($kq['du_lieu']['chi_tiet'] as $ct) {
+foreach ($duLieu['chi_tiet'] as $ct) {
     $dsChiTiet[] = array(
         'id_san_pham' => (int)$ct['ma_san_pham'],
         'ma_san_pham' => DonHangController::hienMaSanPham($ct['ma_san_pham']),
@@ -62,6 +76,10 @@ traVeJson(array(
         'thoi_gian_tao' => DonHangController::dinhDangNgayGio($hd['thoi_gian_tao']),
         'trang_thai' => $tt['nhan'],
         'lop_trang_thai' => $tt['lop'],
+        'tam_tinh' => DonHangController::dinhDangTien($tamTinh),
+        'tien_giam' => DonHangController::dinhDangTien($tienGiam),
+        'co_khuyen_mai' => $coKhuyenMai,
+        'ten_khuyen_mai' => $tenKm,
         'tong_tien' => DonHangController::dinhDangTien($hd['tong_tien']),
         'ly_do_huy' => (string)$hd['ly_do_huy'],
         'ma_nhan_vien' => DonHangController::hienMaNhanVien($hd['ma_nhan_vien']),

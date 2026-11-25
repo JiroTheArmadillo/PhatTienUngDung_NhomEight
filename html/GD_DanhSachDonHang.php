@@ -32,7 +32,7 @@ function e($s)
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         h2 { text-align: center; margin-bottom: 20px; }
-        .chuyen-giao-dien { display: flex; gap: 10px; justify-content: center; margin: -5px 0 15px; }
+        .chuyen-giao-dien { display: flex; gap: 10px; justify-content: center; margin: -5px 0 15px; flex-wrap: wrap; }
         .khung-danh-sach { margin-bottom: 15px; padding: 15px; background: white; border-radius: 6px; }
         table { width: 100%; background: white; border-collapse: collapse; }
         th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
@@ -59,6 +59,8 @@ function e($s)
         .modal-box { width: 760px; max-width: 94%; max-height: 90%; overflow-y: auto; padding: 20px 25px; background: white; border-radius: 7px; }
         .modal-box h3 { font-size: 18px; margin-bottom: 14px; }
         .thong-tin-chung { margin-bottom: 10px; line-height: 1.9; font-size: 14px; }
+        .modal-box .dong-phu td { background: #fcfcfc; color: #444; }
+        .modal-box .dong-giam td { background: #fcfcfc; color: #27ae60; font-weight: 600; }
         .modal-box .tong-cong td { font-weight: 700; border-bottom: none; background: #f8f9fa; }
         .modal-actions { display: flex; gap: 10px; justify-content: space-between; margin-top: 15px; }
 
@@ -78,12 +80,12 @@ function e($s)
     <div class="sidebar">
         <div class="logo">EIGHT STORE</div>
         <a href="GD_TrangChu.php">dashboard</a>
+        <a href="GD_QuanLyCaLamViec.php">Quản lý ca làm việc</a>
         <a href="GD_QuanLyBanHang.php" class="active" aria-current="page">Quản lý Bán Hàng</a>
         <a href="GD_QuanLyNhanVien.php">quản lý nhân viên</a>
         <a href="GD_QuanLyNhaCungCap.php">quản lý nhà cung cấp</a>
         <a href="GD_LapPhieuDatHang.php">Lập phiếu đặt hàng</a>
         <a href="GD_DuyetPhieuDatHang.php">Duyệt phiếu đặt hàng</a>
-        <a href="GD_XuLyHoanTra.php">Xử lý hoàn trả</a>
         <a href="GD_BaoCao.php">Báo cáo</a>
         <a href="logout.php">Đăng xuất</a>
     </div>
@@ -94,6 +96,7 @@ function e($s)
         <div class="chuyen-giao-dien">
             <a class="btn secondary" href="GD_QuanLyBanHang.php">Lập hóa đơn bán hàng</a>
             <a class="btn primary" href="GD_DanhSachDonHang.php" aria-current="page">Xem danh sách đơn hàng</a>
+            <a class="btn warn" href="GD_XuLyHoanTra.php">Yêu cầu hoàn trả</a>
         </div>
 
         <div id="thong-bao-trang"></div>
@@ -139,7 +142,6 @@ function e($s)
                                                 onclick="moHuyDon(<?php echo (int)$dh['ma_hoa_don']; ?>, '<?php echo e(DonHangController::hienMaHoaDon($dh['ma_hoa_don'])); ?>');">Hủy đơn</button>
                                     <?php endif; ?>
                                     <?php if (DonHangController::laDaThanhToan($dh['trang_thai'])): ?>
-                                        <!-- UC34: dùng lại trang in hóa đơn có sẵn ở ThanhToan/hoadon.php -->
                                         <a class="btn success btn-nho" target="_blank" rel="noopener"
                                            href="../ThanhToan/hoadon.php?id=<?php echo (int)$dh['ma_hoa_don']; ?>">Xuất hóa đơn</a>
                                     <?php endif; ?>
@@ -229,10 +231,10 @@ function e($s)
         var URL_SUA = '../php/Control/suaDonHang.php';
         var CSRF_TOKEN = '<?php echo e(DonHangController::layTokenCsrf()); ?>';
 
-        var lanGoi = 0;          // bỏ qua kết quả của lần mở cũ nếu người dùng mở đơn khác quá nhanh
-        var maDangMo = 0;        // id đơn hàng đang xem trong modal
+        var lanGoi = 0;
+        var maDangMo = 0;
         var chiTietHienTai = null;
-        var dangGui = false;     // chặn bấm 2 lần khi đang gửi yêu cầu
+        var dangGui = false;
 
         function $(id) { return document.getElementById(id); }
 
@@ -304,6 +306,7 @@ function e($s)
             html += 'Ca làm việc: <b>' + esc(hd.ma_ca) + '</b><br>';
             html += 'Trạng thái: <span class="badge' + (hd.lop_trang_thai ? ' badge-' + esc(hd.lop_trang_thai) : '') + '">'
                  + esc(hd.trang_thai) + '</span>';
+            html += ' &nbsp;|&nbsp; Khuyến mãi: <b>' + (hd.ten_khuyen_mai ? esc(hd.ten_khuyen_mai) : 'Không áp dụng') + '</b>';
             if (hd.ly_do_huy) {
                 html += '<br>Lý do hủy: <b>' + esc(hd.ly_do_huy) + '</b>';
             }
@@ -329,6 +332,14 @@ function e($s)
                 }
             }
 
+            if (hd.co_khuyen_mai) {
+                html += '<tr class="dong-phu"><td colspan="4" class="text-right">Tạm tính</td>'
+                     + '<td class="text-right">' + esc(hd.tam_tinh) + '</td></tr>';
+                html += '<tr class="dong-giam"><td colspan="4" class="text-right">Giảm giá'
+                     + (hd.ten_khuyen_mai ? ' (' + esc(hd.ten_khuyen_mai) + ')' : '') + '</td>'
+                     + '<td class="text-right">-' + esc(hd.tien_giam) + '</td></tr>';
+            }
+
             html += '<tr class="tong-cong"><td colspan="4" class="text-right">Tổng tiền hóa đơn</td>'
                  + '<td class="text-right">' + esc(hd.tong_tien) + '</td></tr>';
             html += '</tbody></table>';
@@ -336,7 +347,6 @@ function e($s)
             $('modal-noi-dung').innerHTML = html;
             $('nut-hoan-tra').style.display = hd.cho_hoan_tra ? '' : 'none';
 
-            // Tổng tiền ở danh sách phía sau modal cũng được cập nhật theo.
             var oTong = $('tong-tien-' + hd.id);
             if (oTong) { oTong.textContent = hd.tong_tien; }
         }
@@ -347,7 +357,6 @@ function e($s)
             $('modal-chi-tiet').style.display = 'none';
         }
 
-        // ---- Gửi yêu cầu thêm / xóa ----
         function guiYeuCau(thamSo, khiXong) {
             if (dangGui) { return; }
             dangGui = true;
@@ -379,7 +388,6 @@ function e($s)
                 });
         }
 
-        // Khóa / mở các nút xác nhận (class nut-gui) trong lúc đang gửi yêu cầu.
         function khoaNutGui(khoa) {
             var ds = document.querySelectorAll('.nut-gui');
             for (var i = 0; i < ds.length; i++) { ds[i].disabled = khoa; }
@@ -452,7 +460,7 @@ function e($s)
                     anCacKhung();
                     taiChiTiet(maDangMo, kq.message);
                 } else {
-                    hienThongBao('error', kq.message); // luồng 10.1: báo lỗi, giữ lại form để sửa
+                    hienThongBao('error', kq.message);
                 }
             });
         }
@@ -484,7 +492,6 @@ function e($s)
             $('huy-ly-do').focus();
         }
 
-        // Bước 7-8: nhập lý do rồi hệ thống yêu cầu xác nhận.
         function yeuCauXacNhanHuy() {
             var lyDo = cat($('huy-ly-do').value);
             if (lyDo === '') {
@@ -498,7 +505,7 @@ function e($s)
             $('huy-buoc-xac-nhan').style.display = 'block';
         }
 
-        function khongHuy() { // luồng 9.1: giữ nguyên đơn hàng, quay lại danh sách
+        function khongHuy() {
             dongHuyDon();
         }
 
@@ -516,7 +523,6 @@ function e($s)
                     if (nut) { nut.parentNode.removeChild(nut); }
                     hienThongBaoTrang('success', kq.message);
                 } else {
-                    // luồng 10.1: báo lỗi, đơn hàng giữ nguyên
                     $('huy-buoc-xac-nhan').style.display = 'none';
                     $('huy-buoc-nhap').style.display = 'block';
                     $('huy-thong-bao').innerHTML = '<div class="alert alert-error">' + esc(kq.message) + '</div>';

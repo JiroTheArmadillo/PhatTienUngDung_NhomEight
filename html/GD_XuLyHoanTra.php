@@ -1,35 +1,34 @@
 <?php
 session_start();
 require_once dirname(__FILE__) . '/../php/Control/hoanTraController.php';
+require_once dirname(__FILE__) . '/../php/Control/donHangController.php';
 require_once dirname(__FILE__) . '/../php/XacThuc.php';
- 
+
 $nguoiDung = XacThuc::yeuCauDangNhap();
+$coQuyenXemDonHang = DonHangController::choPhepXem($nguoiDung);
 $controller = new HoanTraController();
 $danhSach = array();
 $loiTaiDuLieu = null;
- 
+
 try {
     $danhSach = $controller->layDanhSach();
 } catch (Exception $e) {
     error_log('[HoanTra] ' . $e->getMessage());
     $loiTaiDuLieu = 'Không thể tải danh sách yêu cầu hoàn trả.';
 }
- 
+
 // Thông báo (flash) sau khi xử lý xong
 $flash = isset($_SESSION['flash']) ? $_SESSION['flash'] : null;
 unset($_SESSION['flash']);
- 
-$tenNguoiDung = isset($nguoiDung['ho_ten']) ? $nguoiDung['ho_ten'] : '';
- 
+
 function e($s)
 {
     return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
 }
- 
-// Hiển thị mã theo dạng YCHT01 / HD012 như giao diện gốc
+
 function hienMaYeuCau($id) { return 'YCHT' . str_pad($id, 2, '0', STR_PAD_LEFT); }
 function hienMaHoaDon($id) { return 'HD' . str_pad($id, 3, '0', STR_PAD_LEFT); }
- 
+
 function hienTrangThai($tt)
 {
     switch (trim($tt)) {
@@ -48,175 +47,97 @@ function hienTrangThai($tt)
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Xử Lý Yêu Cầu Hoàn Trả</title>
+    <title>Xử Lý Yêu Cầu Hoàn Trả - EIGHT STORE</title>
     <style>
-    * {
-        margin: 0;
-        padding: 0;
-    }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        h2 { text-align: center; margin-bottom: 20px; }
+        .chuyen-giao-dien { display: flex; gap: 10px; justify-content: center; margin: -5px 0 15px; flex-wrap: wrap; }
+        .khung-danh-sach { margin-bottom: 15px; padding: 15px; background: white; border-radius: 6px; }
+        table { width: 100%; background: white; border-collapse: collapse; }
+        th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
+        tr:hover td { background-color: #f1f5f9; }
+        button, .btn { border: 0; border-radius: 4px; padding: 10px 14px; color: white; cursor: pointer; text-decoration: none; display: inline-block; }
+        .btn-nho { padding: 6px 10px; font-size: 13px; }
+        .primary { background: #3498db; }
+        .success { background: #27ae60; }
+        .danger  { background: #e74c3c; }
+        .secondary { background: #7f8c8d; }
+        .warn { background: #e67e22; }
 
-    .content h2 {
-        font-size: 22px;
-        margin-bottom: 15px;
-        color: #2c3e50;
-    }
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; background: #ecf0f1; color: #555; }
+        .badge-warning { background: #fdebd0; color: #b9770e; }
+        .badge-success { background: #d5f5e3; color: #1e8449; }
+        .badge-danger  { background: #fadbd8; color: #c0392b; }
 
-    table {
-        width: 100%;
-        border-collapse: collapse; /*để mỗi ô trong bảng liên kết không bị tách ra  */
-        background: white;
-        margin-top: 15px;
-        
-        
-    }
+        .alert { padding: 12px 15px; border-radius: 4px; font-size: 14px; margin-bottom: 15px; }
+        .alert-success { background: #d5f5e3; color: #1e8449; }
+        .alert-error   { background: #fadbd8; color: #c0392b; }
 
-    th, td {
-        padding: 12px 15px;
-        text-align: left;
-        border-bottom: 1px solid #eee;
-        font-size: 14px;
-    }
-
-    th {
-        background-color: #f8f9fa;
-        color: #2c3e50;
-        font-weight: 600;
-    }
-
-    tr:hover {
-        background-color: #f1f5f9;
-    }
-
-
-    .btn {
-        padding: 8px 16px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 13px;
-        font-weight: 600;
-        text-decoration: none;
-        display: inline-block;
-    }
-
-    .btn-primary { background-color: #3498db; color: white; }
-    .btn-success { background-color: #2ecc71; color: white; }
-    .btn-danger  { background-color: #e74c3c; color: white; }
-    .btn-secondary { background-color: #95a5a6; color: white; }
-
-/* bổ sung */
-.badge {
-    display: inline-block;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 600;
-    background: #ecf0f1;
-    color: #555;
-}
-.badge-warning { background: #fdebd0; color: #b9770e; }
-.badge-success { background: #d5f5e3; color: #1e8449; }
-.badge-danger  { background: #fadbd8; color: #c0392b; }
-
-.alert {
-    padding: 12px 15px;
-    border-radius: 4px;
-    font-size: 14px;
-    margin-bottom: 15px;
-}
-.alert-success { background: #d5f5e3; color: #1e8449; }
-.alert-error   { background: #fadbd8; color: #c0392b; }
-
-.actions { display: flex; gap: 8px; align-items: flex-start; flex-wrap: wrap; }
-.actions form { margin: 0; }
-
-/* Form nhập lý do từ chối*/
-.modal {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0, 0, 0, 0.45);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-}
-.modal-box {
-    background: white;
-    width: 420px;
-    max-width: 90%;
-    padding: 20px 25px;
-    border-radius: 6px;
-}
-.modal-box h3 { font-size: 17px; color: #2c3e50; margin-bottom: 12px; }
-.modal-box label { display: block; font-size: 13px; margin-bottom: 6px; }
-.modal-box textarea {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 14px;
-    font-family: inherit;
-    resize: vertical;
-}
-.modal-actions { margin-top: 15px; text-align: right; }
-.modal-actions .btn { margin-left: 8px; }
-.ly-do-tu-choi { display: block; margin-top: 4px; font-size: 12px; color: #c0392b; }
-.empty { text-align: center; color: #888; padding: 25px; }
-
-     </style>
+        /* Modal chi tiết yêu cầu hoàn trả */
+        .modal { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,.5); align-items: center; justify-content: center; }
+        .modal-box { width: 760px; max-width: 94%; max-height: 90%; overflow-y: auto; padding: 20px 25px; background: white; border-radius: 7px; }
+        .modal-box h3 { font-size: 18px; margin-bottom: 14px; color: #2c3e50; }
+        .modal-box label { display: block; font-size: 13px; margin-bottom: 6px; }
+        .modal-box textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; font-family: inherit; resize: vertical; }
+        .modal-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 15px; }
+        .ly-do-tu-choi { display: block; margin-top: 4px; font-size: 12px; color: #c0392b; }
+        .empty { text-align: center; color: #888; padding: 25px; }
+    </style>
     <link rel="stylesheet" href="khung-giao-dien.css">
 </head>
 <body class="giao-dien-chung">
 
-    <!-- Sidebar -->
     <div class="sidebar">
-         <div class="logo">EIGHT STORE</div>
-         <a href="GD_TrangChu.php">dashboard</a>
-         <a href="GD_QuanLyBanHang.php">Quản lý Bán Hàng</a>
-        <a href="GD_QuanLyNhanVien.php" <?php $nguoiDung['vai_tro'] !=='QuanLy' ? 'style:"pointer-events:none;"' : '' ?>>quản lý nhân viên</a>
+        <div class="logo">EIGHT STORE</div>
+        <a href="GD_TrangChu.php">dashboard</a>
+        <a href="GD_QuanLyCaLamViec.php">Quản lý ca làm việc</a>
+        <a href="GD_QuanLyBanHang.php" class="active" aria-current="page">Quản lý Bán Hàng</a>
+        <a href="GD_QuanLyNhanVien.php">quản lý nhân viên</a>
         <a href="GD_QuanLyNhaCungCap.php">quản lý nhà cung cấp</a>
         <a href="GD_LapPhieuDatHang.php">Lập phiếu đặt hàng</a>
-        <a href="GD_DuyetPhieuDatHang.php" <?php $nguoiDung['vai_tro'] !=='QuanLy' ? 'style:"pointer-events:none;"' : '' ?>>Duyệt phiếu đặt hàng</a>
-        <a href="GD_XuLyHoanTra.php" <?php $nguoiDung['vai_tro'] !=='QuanLy' ? 'style:"pointer-events:none;"' : '' ?>>Xử lý hoàn trả</a>       
-        <a href="GD_BaoCao.php" class="active" aria-current="page">Báo cáo</a>
+        <a href="GD_DuyetPhieuDatHang.php">Duyệt phiếu đặt hàng</a>
+        <a href="GD_BaoCao.php">Báo cáo</a>
         <a href="logout.php">Đăng xuất</a>
     </div>
 
-    <!-- Main Content -->
-    <div class="main-content">
-        <div class="header">
-            <div class="user-info">Chào mừng, <b><?php echo e($tenNguoiDung); ?></b></div>
+    <div class="main">
+        <h2>Xử lý yêu cầu hoàn trả</h2>
+
+        <div class="chuyen-giao-dien">
+            <a class="btn secondary" href="GD_QuanLyBanHang.php">Lập hóa đơn bán hàng</a>
+            <?php if ($coQuyenXemDonHang): ?>
+            <a class="btn secondary" href="GD_DanhSachDonHang.php">Xem danh sách đơn hàng</a>
+            <?php endif; ?>
+            <a class="btn primary" href="GD_XuLyHoanTra.php" aria-current="page">Yêu cầu hoàn trả</a>
         </div>
 
-        <div class="content">
-            <h2>Danh Sách Yêu Cầu Hoàn Trả Hàng</h2>
- 
-            <?php if ($flash): ?>
-                <div class="alert <?php echo $flash['ok'] ? 'alert-success' : 'alert-error'; ?>">
-                    <?php echo e($flash['message']); ?>
-                </div>
-            <?php endif; ?>
- 
-            <?php if ($loiTaiDuLieu): ?>
-                <div class="alert alert-error"><?php echo e($loiTaiDuLieu); ?></div>
-            <?php endif; ?>
- 
+        <?php if ($flash): ?>
+            <div class="alert <?php echo $flash['ok'] ? 'alert-success' : 'alert-error'; ?>">
+                <?php echo e($flash['message']); ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($loiTaiDuLieu): ?>
+            <div class="alert alert-error"><?php echo e($loiTaiDuLieu); ?></div>
+        <?php endif; ?>
+
+        <div class="khung-danh-sach">
             <table>
                 <thead>
                     <tr>
-                        <th>Mã Yêu Cầu</th>
-                        <th>Mã Hóa Đơn</th>
-                        <th>Lý Do Hoàn Trả</th>
-                        <th>Số Lượng</th>
-                        <th>Trạng Thái</th>
-                        <th>Thao Tác</th>
+                        <th>Mã yêu cầu</th>
+                        <th>Mã hóa đơn</th>
+                        <th>Lý do hoàn trả</th>
+                        <th>Số lượng</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
                     </tr>
                 </thead>
                 <tbody>
                 <?php if (empty($danhSach)): ?>
                     <tr><td colspan="6" class="empty">Chưa có yêu cầu hoàn trả nào.</td></tr>
                 <?php endif; ?>
- 
+
                 <?php foreach ($danhSach as $yc): ?>
                     <tr>
                         <td><?php echo e(hienMaYeuCau($yc['ma_yeu_cau'])); ?></td>
@@ -230,7 +151,7 @@ function hienTrangThai($tt)
                             <?php endif; ?>
                         </td>
                         <td>
-                            <button type="button" class="btn btn-primary" style="padding: 5px 10px;"
+                            <button type="button" class="primary btn-nho"
                                     onclick="moChiTiet(<?php echo (int)$yc['ma_yeu_cau']; ?>);">Xem chi tiết</button>
                         </td>
                     </tr>
@@ -239,10 +160,10 @@ function hienTrangThai($tt)
             </table>
         </div>
     </div>
- 
+
     <!-- Modal chi tiết yêu cầu hoàn trả: xem thông tin, chấp nhận hoặc từ chối -->
-    <div id="modal-chi-tiet" class="modal" style="display: none;" onclick="if (event.target === this) { dongChiTiet(); }">
-        <div class="modal-box" style="width: 760px; max-height: 90%; overflow-y: auto;">
+    <div id="modal-chi-tiet" class="modal" onclick="if (event.target === this) { dongChiTiet(); }">
+        <div class="modal-box">
             <h3>Chi tiết yêu cầu hoàn trả <span id="ct-ma-yeu-cau"></span></h3>
             <div id="ct-noi-dung"></div>
 
@@ -252,32 +173,32 @@ function hienTrangThai($tt)
                 <input type="hidden" name="action" value="reject">
                 <label for="modal-ly-do">Lý do từ chối</label>
                 <textarea name="ly_do_tu_choi" id="modal-ly-do" rows="4" maxlength="255"></textarea>
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary" onclick="dongLyDoTuChoi();">Hủy</button>
-                    <button type="submit" class="btn btn-danger">Xác nhận từ chối</button>
+                <div class="modal-actions" style="justify-content: flex-end;">
+                    <button type="button" class="secondary" onclick="dongLyDoTuChoi();">Hủy</button>
+                    <button type="submit" class="danger">Xác nhận từ chối</button>
                 </div>
             </form>
 
-            <div id="ct-hanh-dong" class="modal-actions" style="display: flex; justify-content: space-between; align-items: center;">
+            <div id="ct-hanh-dong" class="modal-actions">
                 <div style="display: flex; gap: 8px;">
                     <form id="form-chap-nhan" method="post" action="../php/Control/xuLyHoanTra.php" style="display: none;">
                         <input type="hidden" name="id" id="chap-nhan-id" value="">
                         <input type="hidden" name="action" value="accept">
-                        <button type="submit" class="btn btn-success" style="margin-left: 0;">Chấp nhận</button>
+                        <button type="submit" class="success">Chấp nhận</button>
                     </form>
-                    <button type="button" id="nut-tu-choi" class="btn btn-danger" style="display: none; margin-left: 0;" onclick="moLyDoTuChoi();">Từ chối</button>
+                    <button type="button" id="nut-tu-choi" class="danger" style="display: none;" onclick="moLyDoTuChoi();">Từ chối</button>
                 </div>
-                <button type="button" class="btn btn-secondary" onclick="dongChiTiet();">Đóng</button>
+                <button type="button" class="secondary" onclick="dongChiTiet();">Đóng</button>
             </div>
         </div>
     </div>
 
     <script>
         var URL_CHI_TIET = '../php/Control/chiTietHoanTra.php';
-        var lanGoi = 0;      // bỏ qua kết quả của lần mở cũ nếu người dùng mở yêu cầu khác quá nhanh
+        var lanGoi = 0;
         var maDangMo = 0;
 
-        function $(id) { return document.getElementById(id); }
+        function layEl(id) { return document.getElementById(id); }
 
         function esc(s) {
             if (s === null || s === undefined) { s = ''; }
@@ -286,21 +207,21 @@ function hienTrangThai($tt)
         }
 
         function hienLoi(thongBao) {
-            $('ct-noi-dung').innerHTML = '<div class="alert alert-error">' + esc(thongBao) + '</div>';
-            $('form-chap-nhan').style.display = 'none';
-            $('nut-tu-choi').style.display = 'none';
+            layEl('ct-noi-dung').innerHTML = '<div class="alert alert-error">' + esc(thongBao) + '</div>';
+            layEl('form-chap-nhan').style.display = 'none';
+            layEl('nut-tu-choi').style.display = 'none';
         }
 
         function moChiTiet(id) {
             var luot = ++lanGoi;
             maDangMo = id;
-            $('ct-ma-yeu-cau').innerHTML = '';
-            $('form-tu-choi').style.display = 'none';
-            $('ct-hanh-dong').style.display = 'flex';
-            $('form-chap-nhan').style.display = 'none';
-            $('nut-tu-choi').style.display = 'none';
-            $('ct-noi-dung').innerHTML = '<p style="text-align:center;color:#888;padding:25px;">Đang tải dữ liệu...</p>';
-            $('modal-chi-tiet').style.display = 'flex';
+            layEl('ct-ma-yeu-cau').innerHTML = '';
+            layEl('form-tu-choi').style.display = 'none';
+            layEl('ct-hanh-dong').style.display = 'flex';
+            layEl('form-chap-nhan').style.display = 'none';
+            layEl('nut-tu-choi').style.display = 'none';
+            layEl('ct-noi-dung').innerHTML = '<p style="text-align:center;color:#888;padding:25px;">Đang tải dữ liệu...</p>';
+            layEl('modal-chi-tiet').style.display = 'flex';
 
             fetch(URL_CHI_TIET + '?id=' + encodeURIComponent(id), { credentials: 'same-origin' })
                 .then(function (res) { return res.text(); })
@@ -321,7 +242,7 @@ function hienTrangThai($tt)
             var yc = kq.yeu_cau;
             var html = '';
 
-            $('ct-ma-yeu-cau').innerHTML = esc(yc.ma_yeu_cau);
+            layEl('ct-ma-yeu-cau').innerHTML = esc(yc.ma_yeu_cau);
 
             html += '<div style="margin-bottom:10px;line-height:1.9;font-size:14px;">';
             html += 'Hóa đơn: <b>' + esc(yc.ma_hoa_don) + '</b> &nbsp;|&nbsp; ';
@@ -362,35 +283,34 @@ function hienTrangThai($tt)
                  + '<td style="text-align:right;">' + esc(kq.tong_hoan) + '</td></tr>';
             html += '</tbody></table>';
 
-            $('ct-noi-dung').innerHTML = html;
+            layEl('ct-noi-dung').innerHTML = html;
 
-            // Chỉ yêu cầu đang chờ xử lý mới có thao tác chấp nhận / từ chối.
-            $('chap-nhan-id').value = yc.id;
-            $('tu-choi-id').value = yc.id;
-            $('form-chap-nhan').style.display = yc.cho_duyet ? 'block' : 'none';
-            $('nut-tu-choi').style.display = yc.cho_duyet ? 'inline-block' : 'none';
+            layEl('chap-nhan-id').value = yc.id;
+            layEl('tu-choi-id').value = yc.id;
+            layEl('form-chap-nhan').style.display = yc.cho_duyet ? 'block' : 'none';
+            layEl('nut-tu-choi').style.display = yc.cho_duyet ? 'inline-block' : 'none';
         }
 
         function dongChiTiet() {
             lanGoi++;
-            $('form-tu-choi').style.display = 'none';
-            $('modal-chi-tiet').style.display = 'none';
+            layEl('form-tu-choi').style.display = 'none';
+            layEl('modal-chi-tiet').style.display = 'none';
         }
 
         function moLyDoTuChoi() {
-            $('modal-ly-do').value = '';
-            $('ct-hanh-dong').style.display = 'none';
-            $('form-tu-choi').style.display = 'block';
-            $('modal-ly-do').focus();
+            layEl('modal-ly-do').value = '';
+            layEl('ct-hanh-dong').style.display = 'none';
+            layEl('form-tu-choi').style.display = 'block';
+            layEl('modal-ly-do').focus();
         }
 
         function dongLyDoTuChoi() {
-            $('form-tu-choi').style.display = 'none';
-            $('ct-hanh-dong').style.display = 'flex';
+            layEl('form-tu-choi').style.display = 'none';
+            layEl('ct-hanh-dong').style.display = 'flex';
         }
 
         function kiemTraLyDo() {
-            var lyDo = $('modal-ly-do').value.replace(/^\s+|\s+$/g, '');
+            var lyDo = layEl('modal-ly-do').value.replace(/^\s+|\s+$/g, '');
             if (lyDo === '') {
                 alert('Vui lòng nhập lý do từ chối.');
                 return false;
@@ -403,6 +323,6 @@ function hienTrangThai($tt)
             if (ev.keyCode === 27) { dongChiTiet(); }
         };
     </script>
- 
+
 </body>
 </html>

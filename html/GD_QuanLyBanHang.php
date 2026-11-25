@@ -5,10 +5,13 @@ require_once dirname(__FILE__) . '/../db.php';
 require_once dirname(__FILE__) . '/../ThanhToan/helpers.php';
 require_once dirname(__FILE__) . '/../php/XacThuc.php';
 require_once dirname(__FILE__) . '/../php/Control/donHangController.php';
+require_once dirname(__FILE__) . '/../php/Control/khuyenMaiController.php';
+
 $nguoiDung = XacThuc::yeuCauDangNhap();
 // Nút "Xem danh sách đơn hàng" chỉ dành cho Chủ doanh nghiệp.
 $coQuyenXemDonHang = DonHangController::choPhepXem($nguoiDung);
-
+// Lấy danh sách khuyến mãi đang hoạt động từ CSDL.
+$dsKhuyenMai = KhuyenMaiController::layDanhSachDangHoatDong();
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -18,16 +21,21 @@ $coQuyenXemDonHang = DonHangController::choPhepXem($nguoiDung);
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         h2 { text-align: center; margin-bottom: 20px; }
-        .chuyen-giao-dien { display: flex; gap: 10px; justify-content: center; margin: -5px 0 15px; }
+        .chuyen-giao-dien { display: flex; gap: 10px; justify-content: center; margin: -5px 0 15px; flex-wrap: wrap; }
         .nhap-sp { display: flex; gap: 10px; padding: 15px; margin-bottom: 15px; background: white; border-radius: 6px; }
         .nhap-sp input { padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
         #txtMaSP { flex: 1; } #txtSoLuong { width: 90px; }
         table { width: 100%; background: white; border-collapse: collapse; }
         th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
         input.sl { width: 70px; padding: 6px; }
-        .tong { display: flex; justify-content: space-between; align-items: center; padding: 15px; margin-top: 15px; background: white; font-size: 18px; font-weight: bold; }
+        .khuyen-mai { display: flex; gap: 10px; align-items: center; padding: 12px 15px; margin-top: 15px; background: white; border-radius: 6px; }
+        .khuyen-mai label { font-weight: bold; white-space: nowrap; }
+        .khuyen-mai select { flex: 1; padding: 9px; border: 1px solid #ccc; border-radius: 4px; }
+        .tong { display: flex; justify-content: space-between; align-items: center; padding: 15px; margin-top: 10px; background: white; border-radius: 6px; }
+        .chi-tiet-tong { line-height: 1.7; font-size: 15px; }
+        .chi-tiet-tong .tong-cuoi { font-size: 19px; font-weight: bold; }
         button, .btn { border: 0; border-radius: 4px; padding: 10px 14px; color: white; cursor: pointer; text-decoration: none; display: inline-block; }
-        .primary { background: #3498db; } .success { background: #27ae60; } .danger { background: #e74c3c; } .secondary { background: #7f8c8d; }
+        .primary { background: #3498db; } .success { background: #27ae60; } .danger { background: #e74c3c; } .secondary { background: #7f8c8d; } .warning { background: #e67e22; }
         .modal { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,.5); align-items: center; justify-content: center; }
         .modal-content { width: 420px; max-width: 92%; padding: 25px; background: white; border-radius: 7px; text-align: center; }
         .buoc { display: none; } #buocChon { display: block; }
@@ -43,26 +51,27 @@ $coQuyenXemDonHang = DonHangController::choPhepXem($nguoiDung);
 <body class="giao-dien-chung">
     <div class="sidebar">
         <div class="logo">EIGHT STORE</div>
-      <a href="GD_TrangChu.php">dashboard</a>
+        <a href="GD_TrangChu.php">dashboard</a>
         <a href="GD_QuanLyCaLamViec.php">Quản lý ca làm việc</a>
-         <a href="GD_QuanLyBanHang.php">Quản lý Bán Hàng</a>
-        <a href="GD_QuanLyNhanVien.php" class="active" aria-current="page">quản lý nhân viên</a>
+        <a href="GD_QuanLyBanHang.php" class="active" aria-current="page">Quản lý Bán Hàng</a>
+        <a href="GD_QuanLyNhanVien.php">quản lý nhân viên</a>
         <a href="GD_QuanLyNhaCungCap.php">quản lý nhà cung cấp</a>
         <a href="GD_LapPhieuDatHang.php">Lập phiếu đặt hàng</a>
         <a href="GD_DuyetPhieuDatHang.php">Duyệt phiếu đặt hàng</a>
-        <a href="GD_XuLyHoanTra.php">Xử lý hoàn trả</a>       
-        <a href="GD_BaoCao.php" class="active" aria-current="page">Báo cáo</a>
+        <a href="GD_BaoCao.php">Báo cáo</a>
         <a href="logout.php">Đăng xuất</a>
     </div>
 
     <div class="main">
         <h2>Lập hóa đơn bán hàng</h2>
-        <?php if ($coQuyenXemDonHang): ?>
         <div class="chuyen-giao-dien">
             <a class="btn primary" href="GD_QuanLyBanHang.php" aria-current="page">Lập hóa đơn bán hàng</a>
+            <?php if ($coQuyenXemDonHang): ?>
             <a class="btn secondary" href="GD_DanhSachDonHang.php">Xem danh sách đơn hàng</a>
+            <?php endif; ?>
+            <a class="btn warning" href="GD_XuLyHoanTra.php">Yêu cầu hoàn trả</a>
         </div>
-        <?php endif; ?>
+
         <div class="nhap-sp">
             <input type="text" id="txtMaSP" placeholder="Nhập mã SP, ví dụ SP001" autofocus>
             <input type="number" id="txtSoLuong" min="1" value="1" title="Số lượng">
@@ -74,8 +83,32 @@ $coQuyenXemDonHang = DonHangController::choPhepXem($nguoiDung);
             <tbody id="dsSanPham"><tr><td colspan="6" style="text-align:center">Chưa có sản phẩm</td></tr></tbody>
         </table>
 
+        <div class="khuyen-mai">
+            <label for="cboKhuyenMai">Khuyến mãi:</label>
+            <select id="cboKhuyenMai" onchange="capNhatTong()">
+                <option value="">-- Không áp dụng khuyến mãi --</option>
+                <?php foreach ($dsKhuyenMai as $km): ?>
+                    <?php
+                        $nhanGiam = ($km['HinhThucKhuyenMai'] == 'PhanTram')
+                            ? ('Giảm ' . floatval($km['MucGiamGia']) . '%')
+                            : ('Giảm ' . number_format($km['MucGiamGia'], 0, ',', '.') . ' đ');
+                    ?>
+                    <option value="<?php echo intval($km['ID']); ?>"
+                            data-hinhthuc="<?php echo htmlspecialchars($km['HinhThucKhuyenMai'], ENT_QUOTES, 'UTF-8'); ?>"
+                            data-mucgiam="<?php echo floatval($km['MucGiamGia']); ?>">
+                        <?php echo htmlspecialchars($km['TenChuongTrinh'], ENT_QUOTES, 'UTF-8') . ' (' . $nhanGiam . ')'; ?>
+                    </option>
+                <?php endforeach; ?>
+            </select>
+            <button type="button" class="secondary" onclick="boKhuyenMai()">Bỏ chọn</button>
+        </div>
+
         <div class="tong">
-            <span>Tổng cộng: <span id="lblTongTien" style="color:#e74c3c">0 đ</span></span>
+            <div class="chi-tiet-tong">
+                <div>Tạm tính: <span id="lblTamTinh">0 đ</span></div>
+                <div>Giảm giá: <span id="lblGiamGia" style="color:#27ae60">0 đ</span></div>
+                <div class="tong-cuoi">Tổng cộng: <span id="lblTongTien" style="color:#e74c3c">0 đ</span></div>
+            </div>
             <button class="success" onclick="moThanhToan()">Thanh toán hóa đơn</button>
         </div>
     </div>
@@ -126,14 +159,47 @@ $coQuyenXemDonHang = DonHangController::choPhepXem($nguoiDung);
     </div>
 
 <script>
-// Đường dẫn API thanh toán nằm trong thư mục ThanhToan (cùng cấp thư mục html).
 const URL_XU_LY = '../ThanhToan/xulythanhtoan.php';
 let gioHang = [];
 let maThanhToan = 0;
 let boDem = null;
 
 const tien = so => Number(so).toLocaleString('vi-VN') + ' đ';
-const tongTien = () => gioHang.reduce((tong, sp) => tong + sp.gia * sp.soLuong, 0);
+const tamTinh = () => gioHang.reduce((tong, sp) => tong + sp.gia * sp.soLuong, 0);
+
+function layKhuyenMaiDangChon() {
+    const sel = document.getElementById('cboKhuyenMai');
+    if (!sel || !sel.value) return null;
+    const opt = sel.options[sel.selectedIndex];
+    return {
+        id: sel.value,
+        hinhThuc: opt.getAttribute('data-hinhthuc') || '',
+        mucGiam: parseFloat(opt.getAttribute('data-mucgiam')) || 0
+    };
+}
+
+function tinhGiamGia() {
+    const sub = tamTinh();
+    const km = layKhuyenMaiDangChon();
+    if (!km || sub <= 0) return 0;
+    let giam = 0;
+    if (km.hinhThuc === 'PhanTram') giam = Math.round(sub * (km.mucGiam / 100));
+    else if (km.hinhThuc === 'SoTien') giam = Math.round(km.mucGiam);
+    return Math.min(sub, Math.max(0, giam));
+}
+
+const tongTien = () => Math.max(0, tamTinh() - tinhGiamGia());
+
+function boKhuyenMai() {
+    document.getElementById('cboKhuyenMai').value = '';
+    capNhatTong();
+}
+
+function capNhatTong() {
+    document.getElementById('lblTamTinh').innerText = tien(tamTinh());
+    document.getElementById('lblGiamGia').innerText = '-' + tien(tinhGiamGia());
+    document.getElementById('lblTongTien').innerText = tien(tongTien());
+}
 
 async function goiAPI(url, phuongThuc = 'GET', duLieu = null) {
     let opt = { method: phuongThuc };
@@ -157,7 +223,7 @@ function veBang() {
             <td>${tien(sp.gia * sp.soLuong)}</td>
             <td><button class="danger" onclick="xoaDong(${i})">Xóa</button></td></tr>`).join('');
     }
-    document.getElementById('lblTongTien').innerText = tien(tongTien());
+    capNhatTong();
 }
 
 async function themSanPham() {
@@ -208,7 +274,12 @@ function tinhTienThua() {
 
 async function guiThanhToan(phuongThuc) {
     const ds = new URLSearchParams();
-    ds.append('action', 'thanh_toan'); ds.append('phuong_thuc', phuongThuc);
+    ds.append('action', 'thanh_toan');
+    ds.append('phuong_thuc', phuongThuc);
+
+    const km = layKhuyenMaiDangChon();
+    if (km) ds.append('khuyen_mai_id', km.id);
+
     if (phuongThuc === 'TienMat') {
         const dua = docSo(document.getElementById('txtTienKhachDua').value);
         if (dua < tongTien()) return document.getElementById('loiTienMat').innerText = 'Tiền khách đưa chưa đủ';
@@ -264,7 +335,13 @@ function hienKetQua(noiDung, maHoaDon) {
     document.getElementById('lnkHoaDon').href = '../ThanhToan/hoadon.php?id=' + maHoaDon;
     hienBuoc('buocXong');
 }
-function hoaDonMoi() { gioHang=[]; maThanhToan=0; veBang(); dongThanhToan(); }
+function hoaDonMoi() {
+    gioHang = [];
+    maThanhToan = 0;
+    document.getElementById('cboKhuyenMai').value = '';
+    veBang();
+    dongThanhToan();
+}
 
 document.getElementById('txtMaSP').addEventListener('keydown', e => { if (e.key === 'Enter') themSanPham(); });
 veBang();

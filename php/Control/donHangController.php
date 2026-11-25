@@ -1,4 +1,5 @@
 <?php
+require_once dirname(__FILE__) . '/khuyenMaiController.php';
 require_once dirname(__FILE__) . '/../Repository/DonHangRepository.php';
 require_once dirname(__FILE__) . '/../BaoMat.php';
 
@@ -110,7 +111,21 @@ class DonHangController
                 return $this->ketQua(false, 'Không tìm thấy đơn hàng.');
             }
             $chiTiet = $this->repo->layChiTiet($maHoaDon);
-            return $this->ketQua(true, '', array('hoa_don' => $hoaDon, 'chi_tiet' => $chiTiet));
+
+            $tamTinh = 0;
+            foreach ($chiTiet as $ct) {
+                $tamTinh += (float)$ct['thanh_tien'];
+            }
+            $tienGiam = max(0, $tamTinh - (float)$hoaDon['tong_tien']);
+            $khuyenMai = KhuyenMaiController::layTheoHoaDon($maHoaDon);
+
+            return $this->ketQua(true, '', array(
+                'hoa_don'    => $hoaDon,
+                'chi_tiet'   => $chiTiet,
+                'khuyen_mai' => $khuyenMai,
+                'tam_tinh'   => $tamTinh,
+                'tien_giam'  => $tienGiam
+            ));
         } catch (Exception $e) {
             return $this->loiHeThong($e, 'Không thể tải dữ liệu chi tiết đơn hàng.');
         }

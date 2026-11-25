@@ -1,6 +1,7 @@
 <?php
 // Trang in hoa don: hoadon.php?id=1
 require_once dirname(__FILE__) . '/../db.php';
+require_once dirname(__FILE__) . '/../php/Control/khuyenMaiController.php';
 $conn = eightmart_mysqli_connection();
 
 $ma_hoa_don = isset($_GET['id']) ? intval($_GET['id']) : 0;
@@ -23,6 +24,18 @@ $ds_sp = mysqli_query($conn, "SELECT ct.SanPhamID AS ma_san_pham,
                               FROM ChiTietHoaDon ct
                               JOIN SanPham sp ON sp.ID = ct.SanPhamID
                               WHERE ct.HoaDonID = $ma_hoa_don");
+
+$ds_hang = array();
+$tam_tinh = 0;
+if ($ds_sp) {
+    while ($sp = mysqli_fetch_assoc($ds_sp)) {
+        $ds_hang[] = $sp;
+        $tam_tinh += floatval($sp['thanh_tien']);
+    }
+}
+
+$km = KhuyenMaiController::layTheoHoaDon($ma_hoa_don, $conn);
+$tien_giam = max(0, $tam_tinh - floatval($hd['tong_tien']));
 
 $kq_tt = mysqli_query($conn, "SELECT PhuongThucThanhToan AS phuong_thuc_thanh_toan,
                                      TrangThai AS trang_thai, ThoiGian AS thoi_gian,
@@ -53,7 +66,9 @@ $ten_trang_thai = array('ChoThanhToan' => 'Chờ thanh toán', 'DaThanhToan' => 
         table { width: 100%; border-collapse: collapse; margin: 12px 0; }
         th, td { padding: 6px 4px; border-bottom: 1px dashed #aaa; text-align: left; }
         td.so, th.so { text-align: right; }
-        .tong { font-size: 18px; font-weight: bold; text-align: right; }
+        .dong-tong { text-align: right; margin: 4px 0; }
+        .giam-gia { color: #27ae60; }
+        .tong { font-size: 18px; font-weight: bold; text-align: right; margin-top: 6px; }
         button { margin-top: 15px; width: 100%; padding: 10px; cursor: pointer; }
         @media print { button { display: none; } }
     </style>
@@ -68,7 +83,7 @@ $ten_trang_thai = array('ChoThanhToan' => 'Chờ thanh toán', 'DaThanhToan' => 
 
     <table>
         <tr><th>Sản phẩm</th><th class="so">SL</th><th class="so">Đơn giá</th><th class="so">T.Tiền</th></tr>
-        <?php while ($sp = mysqli_fetch_assoc($ds_sp)) { ?>
+        <?php foreach ($ds_hang as $sp) { ?>
         <tr>
             <td><?php echo htmlspecialchars($sp['ten_san_pham']); ?></td>
             <td class="so"><?php echo $sp['so_luong']; ?></td>
@@ -78,7 +93,15 @@ $ten_trang_thai = array('ChoThanhToan' => 'Chờ thanh toán', 'DaThanhToan' => 
         <?php } ?>
     </table>
 
+    <?php if ($km || $tien_giam > 0) { ?>
+    <p class="dong-tong">Tạm tính: <?php echo tien($tam_tinh); ?></p>
+    <p class="dong-tong giam-gia">
+        Khuyến mãi<?php echo $km ? ' (' . htmlspecialchars($km['TenChuongTrinh']) . ')' : ''; ?>:
+        -<?php echo tien($tien_giam); ?>
+    </p>
+    <?php } ?>
     <p class="tong">Tổng cộng: <?php echo tien($hd['tong_tien']); ?></p>
+
     <?php if ($tt) { ?>
     <p>Thanh toán: <?php echo isset($ten_phuong_thuc[$tt['phuong_thuc_thanh_toan']]) ? $ten_phuong_thuc[$tt['phuong_thuc_thanh_toan']] : $tt['phuong_thuc_thanh_toan']; ?></p>
     <?php if ($tt['ma_giao_dich_ngan_hang']) { ?>
