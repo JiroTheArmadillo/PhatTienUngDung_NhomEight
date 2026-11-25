@@ -1,8 +1,8 @@
 <?php
 /**
  * Repository: truy cập CSDL cho các chức năng về đơn hàng:
- * xem danh sách, xem chi tiết, thêm / xóa sản phẩm khỏi đơn hàng (UC31, UC32).
- * Bảng sử dụng: HoaDon, ChiTietHoaDon, SanPham; ThanhToan (đồng bộ số tiền / hủy đơn); PhieuYeuCauTraHang + ChiTietPhieuYeuCauTraHang (yêu cầu hoàn trả).
+ * xem danh sách, xem chi tiết, hủy đơn (UC33), tạo yêu cầu hoàn trả (UC37).
+ * Bảng sử dụng: HoaDon, ChiTietHoaDon, SanPham; ThanhToan (hủy đơn); PhieuYeuCauTraHang + ChiTietPhieuYeuCauTraHang (yêu cầu hoàn trả).
  * Tương thích PHP 5.2.6 + MySQL 5.0 (MySQLi).
  */
 require_once dirname(__FILE__) . '/../../db.php';
@@ -54,39 +54,6 @@ class DonHangRepository
         return eightmart_mysqli_fetch_all_assoc($stmt);
     }
 
-    /** Sản phẩm đang kinh doanh, dùng cho danh sách chọn khi thêm vào đơn. */
-    public function layDanhSachSanPham()
-    {
-        $sql = "SELECT ID AS ma_san_pham, TenSanPham AS ten_san_pham,
-                       GiaBan AS gia_ban, SoLuongTon AS so_luong_ton
-                  FROM SanPham
-                 WHERE TrangThai = 'HoatDong'
-                 ORDER BY ID";
-        $stmt = eightmart_mysqli_execute($sql);
-        return eightmart_mysqli_fetch_all_assoc($stmt);
-    }
-
-    /** Thông tin 1 sản phẩm, null nếu không tồn tại. */
-    public function laySanPham($maSanPham)
-    {
-        $sql = "SELECT ID AS ma_san_pham, TenSanPham AS ten_san_pham, GiaBan AS gia_ban,
-                       SoLuongTon AS so_luong_ton, TrangThai AS trang_thai
-                  FROM SanPham
-                 WHERE ID = ?";
-        $stmt = eightmart_mysqli_execute($sql, array((int)$maSanPham));
-        return eightmart_mysqli_fetch_one_assoc($stmt);
-    }
-
-    /** Dòng chi tiết (SoLuong, DonGia) của 1 sản phẩm trong đơn, null nếu chưa có. */
-    public function layDong($maHoaDon, $maSanPham)
-    {
-        $sql = "SELECT SoLuong AS so_luong, DonGia AS don_gia
-                  FROM ChiTietHoaDon
-                 WHERE HoaDonID = ? AND SanPhamID = ?";
-        $stmt = eightmart_mysqli_execute($sql, array((int)$maHoaDon, (int)$maSanPham));
-        return eightmart_mysqli_fetch_one_assoc($stmt);
-    }
-
     // ---------------- Giao dịch ----------------
 
     public function batDauGiaoDich() { eightmart_mysqli_begin_transaction(); }
@@ -115,64 +82,6 @@ class DonHangRepository
     {
         $stmt = eightmart_mysqli_execute('SELECT TrangThai AS trang_thai FROM HoaDon WHERE ID = ? FOR UPDATE', array((int)$maHoaDon));
         return eightmart_mysqli_fetch_one_assoc($stmt);
-    }
-
-    // ---------------- Ghi dữ liệu (gọi trong giao dịch) ----------------
-
-    /** Thêm dòng mới; đơn giá lấy từ GiaBan hiện tại, thành tiền = GiaBan * số lượng. */
-    public function themDongMoi($maHoaDon, $maSanPham, $soLuong)
-    {
-        $stmt = eightmart_mysqli_execute(
-            "INSERT INTO ChiTietHoaDon (SoLuong, HoaDonID, DonGia, ThanhTien, SanPhamID)
-             SELECT ?, ?, GiaBan, GiaBan * ?, ID FROM SanPham WHERE ID = ?",
-            array((int)$soLuong, (int)$maHoaDon, (int)$soLuong, (int)$maSanPham)
-        );
-        return eightmart_mysqli_affected_rows($stmt) > 0;
-    }
-
-    /**
-     * Sản phẩm đã có trong đơn: cộng thêm số lượng, giữ nguyên đơn giá cũ.
-     * ThanhTien đặt TRƯỚC SoLuong vì MySQL cập nhật các cột theo thứ tự từ trái sang phải.
-     */
-    public function tangSoLuongDong($maHoaDon, $maSanPham, $soLuongThem)
-    {
-        $stmt = eightmart_mysqli_execute(
-            "UPDATE ChiTietHoaDon
-                SET ThanhTien = (SoLuong + ?) * DonGia, SoLuong = SoLuong + ?
-              WHERE HoaDonID = ? AND SanPhamID = ?",
-            array((int)$soLuongThem, (int)$soLuongThem, (int)$maHoaDon, (int)$maSanPham)
-        );
-        return eightmart_mysqli_affected_rows($stmt) > 0;
-    }
-
-    public function xoaDong($maHoaDon, $maSanPham)
-    {
-        $stmt = eightmart_mysqli_execute(
-            'DELETE FROM ChiTietHoaDon WHERE HoaDonID = ? AND SanPhamID = ?',
-            array((int)$maHoaDon, (int)$maSanPham)
-        );
-        return eightmart_mysqli_affected_rows($stmt) > 0;
-    }
-
-    /** Tính lại tổng tiền = tổng thành tiền các dòng chi tiết. */
-    public function capNhatTongTien($maHoaDon)
-    {
-        $stmt = eightmart_mysqli_execute(
-            "UPDATE HoaDon
-                SET TongTien = (SELECT IFNULL(SUM(c.ThanhTien), 0) FROM ChiTietHoaDon c WHERE c.HoaDonID = ?)
-              WHERE ID = ?",
-            array((int)$maHoaDon, (int)$maHoaDon)
-        );
-        eightmart_mysqli_affected_rows($stmt);
-
-        // Giao dịch chuyển khoản đang chờ phải khớp với tổng tiền mới của hóa đơn.
-        $stmt = eightmart_mysqli_execute(
-            "UPDATE ThanhToan
-                SET SoTien = (SELECT TongTien FROM HoaDon WHERE ID = ?)
-              WHERE HoaDonID = ? AND TrangThai = 'ChoXacNhan'",
-            array((int)$maHoaDon, (int)$maHoaDon)
-        );
-        eightmart_mysqli_affected_rows($stmt);
     }
 
     // ---------------- UC33: Hủy đơn hàng (gọi trong giao dịch) ----------------

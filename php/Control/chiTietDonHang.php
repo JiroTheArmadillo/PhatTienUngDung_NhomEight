@@ -41,9 +41,6 @@ if (!$kq['ok']) {
 $hd = $kq['du_lieu']['hoa_don'];
 $tt = DonHangController::trangThaiHienThi($hd['trang_thai']);
 
-// Chỉ đơn Chưa thanh toán mới được thêm / xóa sản phẩm (UC31, UC32).
-$choSua = DonHangController::choPhepSua($nguoiDung) && DonHangController::laChuaThanhToan($hd['trang_thai']);
-
 $dsChiTiet = array();
 foreach ($kq['du_lieu']['chi_tiet'] as $ct) {
     $dsChiTiet[] = array(
@@ -55,20 +52,6 @@ foreach ($kq['du_lieu']['chi_tiet'] as $ct) {
         'thanh_tien' => DonHangController::dinhDangTien($ct['thanh_tien']),
         'da_yeu_cau_hoan' => (int)$ct['da_yeu_cau_hoan']
     );
-}
-
-$dsSanPham = array();
-if ($choSua) {
-    $kqSp = $controller->layDanhSachSanPham();
-    if ($kqSp['ok']) {
-        foreach ($kqSp['du_lieu'] as $sp) {
-            $dsSanPham[] = array(
-                'id' => (int)$sp['ma_san_pham'],
-                'nhan' => DonHangController::hienMaSanPham($sp['ma_san_pham']) . ' - ' . $sp['ten_san_pham']
-                    . ' (' . DonHangController::dinhDangTien($sp['gia_ban']) . ', tồn ' . (int)$sp['so_luong_ton'] . ')'
-            );
-        }
-    }
 }
 
 traVeJson(array(
@@ -84,10 +67,8 @@ traVeJson(array(
         'ma_nhan_vien' => DonHangController::hienMaNhanVien($hd['ma_nhan_vien']),
         'ma_khach_hang' => DonHangController::hienMaKhachHang($hd['ma_khach_hang']),
         'ma_ca' => (int)$hd['ma_ca'],
-        'cho_sua' => $choSua,
         // Đơn đã thanh toán mới được tạo yêu cầu hoàn trả (UC37).
         'cho_hoan_tra' => DonHangController::choPhepSua($nguoiDung) && DonHangController::laDaThanhToan($hd['trang_thai'])
     ),
-    'chi_tiet' => $dsChiTiet,
-    'san_pham_them' => $dsSanPham
+    'chi_tiet' => $dsChiTiet
 ));

@@ -160,29 +160,6 @@ function e($s)
             <div id="modal-thong-bao"></div>
             <div id="modal-noi-dung"></div>
 
-            <!-- UC31: thêm sản phẩm vào đơn hàng -->
-            <div id="khung-them" class="khung-phu">
-                <h4>Thêm sản phẩm vào đơn hàng</h4>
-                <label for="chon-san-pham">Sản phẩm</label>
-                <select id="chon-san-pham"></select>
-                <label for="nhap-so-luong">Số lượng</label>
-                <input type="number" id="nhap-so-luong" min="1" step="1" value="1">
-                <div class="hang-nut">
-                    <button type="button" class="secondary" onclick="huyThem();">Hủy</button>
-                    <button type="button" class="success nut-gui" id="nut-xac-nhan-them" onclick="xacNhanThem();">Xác nhận thêm</button>
-                </div>
-            </div>
-
-            <!-- UC32: xác nhận xóa sản phẩm -->
-            <div id="khung-xoa" class="khung-phu">
-                <h4>Xóa sản phẩm khỏi đơn hàng</h4>
-                <p>Bạn có chắc muốn xóa <b id="xoa-ten-san-pham"></b> khỏi đơn hàng này?</p>
-                <div class="hang-nut">
-                    <button type="button" class="secondary" onclick="tuChoiXoa();">Từ chối</button>
-                    <button type="button" class="danger nut-gui" id="nut-xac-nhan-xoa" onclick="xacNhanXoa();">Xác nhận</button>
-                </div>
-            </div>
-
             <!-- UC37: tạo yêu cầu hoàn trả -->
             <div id="khung-hoan-tra" class="khung-phu">
                 <h4>Tạo yêu cầu hoàn trả</h4>
@@ -207,7 +184,6 @@ function e($s)
 
             <div class="modal-actions">
                 <div style="display:flex;gap:10px;">
-                    <button type="button" class="primary" id="nut-them-san-pham" style="display:none;" onclick="moFormThem();">+ Thêm sản phẩm</button>
                     <button type="button" class="warn" id="nut-hoan-tra" style="display:none;" onclick="moFormHoanTra();">Tạo yêu cầu hoàn trả</button>
                 </div>
                 <button type="button" class="secondary" style="margin-left:auto;" onclick="dongChiTiet();">Đóng</button>
@@ -256,7 +232,6 @@ function e($s)
         var lanGoi = 0;          // bỏ qua kết quả của lần mở cũ nếu người dùng mở đơn khác quá nhanh
         var maDangMo = 0;        // id đơn hàng đang xem trong modal
         var chiTietHienTai = null;
-        var maSanPhamCanXoa = 0;
         var dangGui = false;     // chặn bấm 2 lần khi đang gửi yêu cầu
 
         function $(id) { return document.getElementById(id); }
@@ -275,14 +250,11 @@ function e($s)
         function cat(s) { return String(s).replace(/^\s+|\s+$/g, ''); }
 
         function anCacKhung() {
-            $('khung-them').style.display = 'none';
-            $('khung-xoa').style.display = 'none';
             $('khung-hoan-tra').style.display = 'none';
         }
 
         function hienLoi(thongBao) {
             $('modal-noi-dung').innerHTML = '<div class="alert alert-error">' + esc(thongBao) + '</div>';
-            $('nut-them-san-pham').style.display = 'none';
             $('nut-hoan-tra').style.display = 'none';
         }
 
@@ -294,7 +266,6 @@ function e($s)
             anCacKhung();
             hienThongBao('', '');
             $('modal-ma-hoa-don').innerHTML = '';
-            $('nut-them-san-pham').style.display = 'none';
             $('nut-hoan-tra').style.display = 'none';
             $('modal-noi-dung').innerHTML = '<div class="dang-tai">Đang tải dữ liệu...</div>';
             $('modal-chi-tiet').style.display = 'flex';
@@ -321,7 +292,6 @@ function e($s)
 
         function veChiTiet(kq) {
             var hd = kq.hoa_don;
-            var choSua = !!hd.cho_sua;
             var html = '';
             chiTietHienTai = kq;
 
@@ -339,15 +309,13 @@ function e($s)
             }
             html += '</div>';
 
-            var soCot = choSua ? 6 : 5;
             html += '<table><thead><tr>';
             html += '<th>Mã SP</th><th>Tên sản phẩm</th>';
             html += '<th class="text-right">Số lượng</th><th class="text-right">Đơn giá</th><th class="text-right">Thành tiền</th>';
-            if (choSua) { html += '<th>Thao tác</th>'; }
             html += '</tr></thead><tbody>';
 
             if (!kq.chi_tiet || kq.chi_tiet.length === 0) {
-                html += '<tr><td colspan="' + soCot + '" class="empty">Đơn hàng chưa có sản phẩm.</td></tr>';
+                html += '<tr><td colspan="5" class="empty">Đơn hàng chưa có sản phẩm.</td></tr>';
             } else {
                 for (var i = 0; i < kq.chi_tiet.length; i++) {
                     var ct = kq.chi_tiet[i];
@@ -357,19 +325,15 @@ function e($s)
                         + '<td class="text-right">' + esc(ct.so_luong) + '</td>'
                         + '<td class="text-right">' + esc(ct.don_gia) + '</td>'
                         + '<td class="text-right">' + esc(ct.thanh_tien) + '</td>';
-                    if (choSua) {
-                        html += '<td><button type="button" class="danger btn-nho" onclick="hoiXoa(' + i + ');">Xóa</button></td>';
-                    }
                     html += '</tr>';
                 }
             }
 
-            html += '<tr class="tong-cong"><td colspan="' + (soCot - 1) + '" class="text-right">Tổng tiền hóa đơn</td>'
+            html += '<tr class="tong-cong"><td colspan="4" class="text-right">Tổng tiền hóa đơn</td>'
                  + '<td class="text-right">' + esc(hd.tong_tien) + '</td></tr>';
             html += '</tbody></table>';
 
             $('modal-noi-dung').innerHTML = html;
-            $('nut-them-san-pham').style.display = choSua ? '' : 'none';
             $('nut-hoan-tra').style.display = hd.cho_hoan_tra ? '' : 'none';
 
             // Tổng tiền ở danh sách phía sau modal cũng được cập nhật theo.
@@ -419,74 +383,6 @@ function e($s)
         function khoaNutGui(khoa) {
             var ds = document.querySelectorAll('.nut-gui');
             for (var i = 0; i < ds.length; i++) { ds[i].disabled = khoa; }
-        }
-
-        // ---- UC31: thêm sản phẩm ----
-        function moFormThem() {
-            if (!chiTietHienTai) { return; }
-            anCacKhung();
-            hienThongBao('', '');
-
-            var ds = chiTietHienTai.san_pham_them || [];
-            var chon = $('chon-san-pham');
-            var opt = '<option value="">-- Chọn sản phẩm --</option>';
-            for (var i = 0; i < ds.length; i++) {
-                opt += '<option value="' + esc(ds[i].id) + '">' + esc(ds[i].nhan) + '</option>';
-            }
-            chon.innerHTML = opt;
-            $('nhap-so-luong').value = '1';
-            $('khung-them').style.display = 'block';
-            chon.focus();
-        }
-
-        function huyThem() { // luồng thay thế 9.1: hủy thêm, quay lại chi tiết đơn hàng
-            $('khung-them').style.display = 'none';
-            hienThongBao('', '');
-        }
-
-        function xacNhanThem() {
-            var maSp = $('chon-san-pham').value;
-            var soLuong = $('nhap-so-luong').value.replace(/^\s+|\s+$/g, '');
-            if (maSp === '') { hienThongBao('error', 'Vui lòng chọn sản phẩm.'); return; }
-            if (!/^[0-9]+$/.test(soLuong) || parseInt(soLuong, 10) <= 0) {
-                hienThongBao('error', 'Số lượng phải là số nguyên dương.');
-                return;
-            }
-            guiYeuCau({ action: 'them', ma_hoa_don: maDangMo, ma_san_pham: maSp, so_luong: soLuong }, function (kq) {
-                if (kq.ok) {
-                    anCacKhung();
-                    taiChiTiet(maDangMo, kq.message);
-                } else {
-                    hienThongBao('error', kq.message);
-                }
-            });
-        }
-
-        // ---- UC32: xóa sản phẩm ----
-        function hoiXoa(viTri) {
-            if (!chiTietHienTai || !chiTietHienTai.chi_tiet[viTri]) { return; }
-            anCacKhung();
-            hienThongBao('', '');
-            var ct = chiTietHienTai.chi_tiet[viTri];
-            maSanPhamCanXoa = ct.id_san_pham;
-            $('xoa-ten-san-pham').textContent = ct.ma_san_pham + ' - ' + ct.ten_san_pham;
-            $('khung-xoa').style.display = 'block';
-        }
-
-        function tuChoiXoa() { // luồng thay thế 10.1: giữ nguyên sản phẩm
-            $('khung-xoa').style.display = 'none';
-        }
-
-        function xacNhanXoa() {
-            guiYeuCau({ action: 'xoa', ma_hoa_don: maDangMo, ma_san_pham: maSanPhamCanXoa }, function (kq) {
-                if (kq.ok) {
-                    anCacKhung();
-                    taiChiTiet(maDangMo, kq.message);
-                } else {
-                    hienThongBao('error', kq.message);
-                    $('khung-xoa').style.display = 'none';
-                }
-            });
         }
 
         // ---- UC37: tạo yêu cầu hoàn trả ----

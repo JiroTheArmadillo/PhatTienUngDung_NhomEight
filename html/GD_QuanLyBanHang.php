@@ -1,5 +1,5 @@
 <?php
-// Trang quản lý bán hàng đổ trực tiếp danh sách sản phẩm từ CSDL, giống trang quản lý nhân viên.
+// Trang quản lý bán hàng: lập hóa đơn bằng cách nhập mã sản phẩm.
 session_start();
 require_once dirname(__FILE__) . '/../db.php';
 require_once dirname(__FILE__) . '/../ThanhToan/helpers.php';
@@ -8,25 +8,7 @@ require_once dirname(__FILE__) . '/../php/Control/donHangController.php';
 $nguoiDung = XacThuc::yeuCauDangNhap();
 // Nút "Xem danh sách đơn hàng" chỉ dành cho Chủ doanh nghiệp.
 $coQuyenXemDonHang = DonHangController::choPhepXem($nguoiDung);
-$conn = eightmart_mysqli_connection();
 
-function hSanPham($giaTri) { return htmlspecialchars((string) $giaTri, ENT_QUOTES, 'UTF-8'); }
-
-$loiSanPham = '';
-$quanLyDanhSachSanPham = array();
-$resultSanPham = mysqli_query($conn,
-    "SELECT ID AS ma_san_pham, TenSanPham AS ten_san_pham, GiaBan AS gia_ban, SoLuongTon AS so_luong_ton
-     FROM SanPham
-     WHERE TrangThai = 'HoatDong'
-     ORDER BY ID");
-
-if (!$resultSanPham) {
-    $loiSanPham = 'Không thể tải danh sách sản phẩm từ CSDL.';
-} else {
-    while ($dongSanPham = mysqli_fetch_assoc($resultSanPham)) {
-        $quanLyDanhSachSanPham[] = $dongSanPham;
-    }
-}
 ?>
 <!DOCTYPE html>
 <html lang="vi">
@@ -38,8 +20,6 @@ if (!$resultSanPham) {
         h2 { text-align: center; margin-bottom: 20px; }
         .chuyen-giao-dien { display: flex; gap: 10px; justify-content: center; margin: -5px 0 15px; }
         .nhap-sp { display: flex; gap: 10px; padding: 15px; margin-bottom: 15px; background: white; border-radius: 6px; }
-        .khung-danh-sach { margin-bottom: 15px; padding: 15px; background: white; border-radius: 6px; }
-        .khung-danh-sach h3 { margin-bottom: 10px; }
         .nhap-sp input { padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
         #txtMaSP { flex: 1; } #txtSoLuong { width: 90px; }
         table { width: 100%; background: white; border-collapse: collapse; }
@@ -64,7 +44,7 @@ if (!$resultSanPham) {
     <div class="sidebar">
         <div class="logo">EIGHT STORE</div>
       <a href="GD_TrangChu.php">dashboard</a>
-      <a href="GD_QuanLyCaLamViec.php">Quản lý ca làm việc</a>
+        <a href="GD_QuanLyCaLamViec.php">Quản lý ca làm việc</a>
          <a href="GD_QuanLyBanHang.php">Quản lý Bán Hàng</a>
         <a href="GD_QuanLyNhanVien.php" class="active" aria-current="page">quản lý nhân viên</a>
         <a href="GD_QuanLyNhaCungCap.php">quản lý nhà cung cấp</a>
@@ -87,37 +67,6 @@ if (!$resultSanPham) {
             <input type="text" id="txtMaSP" placeholder="Nhập mã SP, ví dụ SP001" autofocus>
             <input type="number" id="txtSoLuong" min="1" value="1" title="Số lượng">
             <button class="primary" onclick="themSanPham()">Thêm vào hóa đơn</button>
-        </div>
-
-        <!-- Danh sách sản phẩm đổ từ server, thao tác mẫu giống trang quản lý nhân viên. -->
-        <div class="khung-danh-sach">
-            <h3>Danh sách sản phẩm</h3>
-            <table>
-                <thead><tr><th>Mã SP</th><th>Tên sản phẩm</th><th>Giá bán</th><th>Số lượng tồn</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
-                <tbody>
-                    <?php if ($loiSanPham): ?>
-                    <tr><td colspan="6" style="text-align:center;color:#e74c3c;"><?php echo hSanPham($loiSanPham); ?></td></tr>
-                    <?php elseif (count($quanLyDanhSachSanPham) === 0): ?>
-                    <tr><td colspan="6" style="text-align:center;">Chưa có dữ liệu sản phẩm.</td></tr>
-                    <?php else: foreach ($quanLyDanhSachSanPham as $sp):
-                        $maHienThiSP = ma_sp_hien_thi((int) $sp['ma_san_pham']);
-                        $tonKho = (int) $sp['so_luong_ton'];
-                    ?>
-                    <tr>
-                        <td><?php echo hSanPham($maHienThiSP); ?></td>
-                        <td><?php echo hSanPham($sp['ten_san_pham']); ?></td>
-                        <td><?php echo number_format((float) $sp['gia_ban'], 0, ',', '.'); ?> đ</td>
-                        <td><?php echo $tonKho; ?></td>
-                        <td><?php echo $tonKho > 0 ? 'Còn hàng' : 'Hết hàng'; ?></td>
-                        <td>
-                            <button type="button" class="primary" style="padding:5px 10px;font-size:12px;"
-                                onclick="themSanPhamTuDanhSach('<?php echo hSanPham($maHienThiSP); ?>', <?php echo $tonKho; ?>)"
-                                <?php echo $tonKho <= 0 ? 'disabled style="padding:5px 10px;font-size:12px;background:#95a5a6"' : ''; ?>>Thêm vào hóa đơn</button>
-                        </td>
-                    </tr>
-                    <?php endforeach; endif; ?>
-                </tbody>
-            </table>
         </div>
 
         <table>
@@ -209,14 +158,6 @@ function veBang() {
             <td><button class="danger" onclick="xoaDong(${i})">Xóa</button></td></tr>`).join('');
     }
     document.getElementById('lblTongTien').innerText = tien(tongTien());
-}
-
-// Lấy mã từ bảng danh sách rồi dùng lại hàm thêm sản phẩm hiện có của hóa đơn.
-function themSanPhamTuDanhSach(maSP, tonKho) {
-    if (tonKho <= 0) return alert('Sản phẩm đã hết hàng');
-    document.getElementById('txtMaSP').value = maSP;
-    document.getElementById('txtSoLuong').value = '1';
-    themSanPham();
 }
 
 async function themSanPham() {
