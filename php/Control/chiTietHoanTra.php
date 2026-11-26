@@ -41,7 +41,11 @@ $nguoiDung = XacThuc::layNguoiDung();
 if ($nguoiDung === null) {
     baoLoi('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.');
 }
-
+require_once dirname(__FILE__) . '/donHangController.php';
+if (!DonHangController::laChuDoanhNghiep($nguoiDung)) {
+    echo json_encode(array('ok' => false, 'message' => 'Bạn không có quyền xem chi tiết yêu cầu hoàn trả.'));
+    exit;
+}
 $maYeuCau = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
 $controller = new HoanTraController();

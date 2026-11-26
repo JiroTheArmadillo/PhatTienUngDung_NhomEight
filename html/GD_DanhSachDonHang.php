@@ -5,6 +5,7 @@ require_once dirname(__FILE__) . '/../php/XacThuc.php';
 
 $nguoiDung = XacThuc::yeuCauDangNhap();
 $coQuyen = DonHangController::choPhepXem($nguoiDung);
+$coQuyenHoanTra = DonHangController::laChuDoanhNghiep($nguoiDung);
 
 $danhSach = array();
 $loiTaiDuLieu = null;
@@ -96,7 +97,9 @@ function e($s)
         <div class="chuyen-giao-dien">
             <a class="btn secondary" href="GD_QuanLyBanHang.php">Lập hóa đơn bán hàng</a>
             <a class="btn primary" href="GD_DanhSachDonHang.php" aria-current="page">Xem danh sách đơn hàng</a>
+            <?php if ($coQuyenHoanTra): ?>
             <a class="btn warn" href="GD_XuLyHoanTra.php">Yêu cầu hoàn trả</a>
+            <?php endif; ?>
         </div>
 
         <div id="thong-bao-trang"></div>

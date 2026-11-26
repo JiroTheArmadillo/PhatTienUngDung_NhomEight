@@ -31,13 +31,32 @@ class DonHangController
     // ---------------- Phân quyền & CSRF ----------------
 
     /** Xem danh sách / chi tiết: Chủ doanh nghiệp (vai trò QuanLy / ChuDoanhNghiep). */
+ /** Xem danh sách / chi tiết đơn hàng: cả Chủ doanh nghiệp và Nhân viên đã đăng nhập. */
     public static function choPhepXem($nguoiDung)
     {
-        if (!is_array($nguoiDung) || !isset($nguoiDung['vai_tro'])) {
+        if (!is_array($nguoiDung)) {
+            return false;
+        }
+        return count($nguoiDung) > 0;
+    }
+
+    /** Kiểm tra quyền Chủ doanh nghiệp (vai trò QuanLy / ChuDoanhNghiep) cho chức năng Xử lý hoàn trả. */
+    public static function laChuDoanhNghiep($nguoiDung)
+    {
+        if (!is_array($nguoiDung)) {
+            return false;
+        }
+        if (!isset($nguoiDung['vai_tro'])) {
             return false;
         }
         $vaiTro = strtolower(trim((string)$nguoiDung['vai_tro']));
-        return ($vaiTro === 'quanly' || $vaiTro === 'chudoanhnghiep');
+        if ($vaiTro === 'quanly') {
+            return true;
+        }
+        if ($vaiTro === 'chudoanhnghiep') {
+            return true;
+        }
+        return false;
     }
 
     /** Hủy đơn / tạo yêu cầu hoàn trả: Nhân viên đã đăng nhập (Pre-condition UC33, UC37). */

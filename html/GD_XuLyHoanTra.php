@@ -6,9 +6,19 @@ require_once dirname(__FILE__) . '/../php/XacThuc.php';
 
 $nguoiDung = XacThuc::yeuCauDangNhap();
 $coQuyenXemDonHang = DonHangController::choPhepXem($nguoiDung);
-$controller = new HoanTraController();
+$coQuyenHoanTra = DonHangController::laChuDoanhNghiep($nguoiDung);
 $danhSach = array();
 $loiTaiDuLieu = null;
+
+if ($coQuyenHoanTra) {
+    $controller = new HoanTraController();
+    try {
+        $danhSach = $controller->layDanhSach();
+    } catch (Exception $e) {
+        error_log('[HoanTra] ' . $e->getMessage());
+        $loiTaiDuLieu = 'Không thể tải danh sách yêu cầu hoàn trả.';
+    }
+}
 
 try {
     $danhSach = $controller->layDanhSach();
@@ -108,9 +118,15 @@ function hienTrangThai($tt)
             <?php if ($coQuyenXemDonHang): ?>
             <a class="btn secondary" href="GD_DanhSachDonHang.php">Xem danh sách đơn hàng</a>
             <?php endif; ?>
+            <?php if ($coQuyenHoanTra): ?>
             <a class="btn primary" href="GD_XuLyHoanTra.php" aria-current="page">Yêu cầu hoàn trả</a>
+            <?php endif; ?>
         </div>
-
+            <?php if (!$coQuyenHoanTra): ?>
+            <div class="alert alert-error">Bạn không có quyền truy cập chức năng xử lý yêu cầu hoàn trả.</div>
+            <?php else: ?>
+            <!-- Giữ nguyên toàn bộ phần $flash, $loiTaiDuLieu và <div class="khung-danh-sach"><table>...</table></div> ở đây -->
+        <?php endif; ?>
         <?php if ($flash): ?>
             <div class="alert <?php echo $flash['ok'] ? 'alert-success' : 'alert-error'; ?>">
                 <?php echo e($flash['message']); ?>

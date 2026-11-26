@@ -5,6 +5,12 @@ require_once dirname(__FILE__) . '/../php/Control/donHangController.php';
 require_once dirname(__FILE__) . '/../php/XacThuc.php';
 
 $nguoiDung = XacThuc::yeuCauDangNhap();
+require_once dirname(__FILE__) . '/donHangController.php';
+if (!DonHangController::laChuDoanhNghiep($nguoiDung)) {
+    $_SESSION['flash'] = array('ok' => false, 'message' => 'Bạn không có quyền xử lý yêu cầu hoàn trả.');
+    header('Location: ../../html/GD_XuLyHoanTra.php');
+    exit;
+}
 $coQuyenXemDonHang = DonHangController::choPhepXem($nguoiDung);
 $controller = new HoanTraController();
 $danhSach = array();

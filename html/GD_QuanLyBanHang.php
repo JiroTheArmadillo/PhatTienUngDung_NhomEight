@@ -10,6 +10,7 @@ require_once dirname(__FILE__) . '/../php/Control/khuyenMaiController.php';
 $nguoiDung = XacThuc::yeuCauDangNhap();
 // Nút "Xem danh sách đơn hàng" chỉ dành cho Chủ doanh nghiệp.
 $coQuyenXemDonHang = DonHangController::choPhepXem($nguoiDung);
+$coQuyenHoanTra = DonHangController::laChuDoanhNghiep($nguoiDung);
 // Lấy danh sách khuyến mãi đang hoạt động từ CSDL.
 $dsKhuyenMai = KhuyenMaiController::layDanhSachDangHoatDong();
 ?>
@@ -45,6 +46,26 @@ $dsKhuyenMai = KhuyenMaiController::layDanhSachDangHoatDong();
         #txtTienKhachDua { width: 100%; padding: 10px; margin-top: 8px; border: 1px solid #ccc; }
         .qr { max-width: 220px; margin: 12px 0; }
         .thongtin { padding: 10px; background: #f2f4f5; border-radius: 5px; text-align: left; line-height: 1.7; }
+        .thong-bao-thanh-cong {
+    display: none;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    margin-bottom: 15px;
+    background: #d5f5e3;
+    color: #1e8449;
+    border: 1px solid #a9dfbf;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+}
+.thong-bao-thanh-cong .nut-tat {
+    background: transparent;
+    color: #1e8449;
+    font-size: 18px;
+    padding: 0 6px;
+    line-height: 1;
+}
     </style>
     <link rel="stylesheet" href="khung-giao-dien.css">
 </head>
@@ -69,9 +90,14 @@ $dsKhuyenMai = KhuyenMaiController::layDanhSachDangHoatDong();
             <?php if ($coQuyenXemDonHang): ?>
             <a class="btn secondary" href="GD_DanhSachDonHang.php">Xem danh sách đơn hàng</a>
             <?php endif; ?>
+            <?php if ($coQuyenHoanTra): ?>
             <a class="btn warning" href="GD_XuLyHoanTra.php">Yêu cầu hoàn trả</a>
+            <?php endif; ?>
         </div>
-
+        <div id="thongBaoXacNhan" class="thong-bao-thanh-cong">
+    <span id="noiDungThongBao"></span>
+    <button type="button" class="nut-tat" onclick="anThongBao()" title="Đóng">&times;</button>
+</div>
         <div class="nhap-sp">
             <input type="text" id="txtMaSP" placeholder="Nhập mã SP, ví dụ SP001" autofocus>
             <input type="number" id="txtSoLuong" min="1" value="1" title="Số lượng">
@@ -152,9 +178,13 @@ $dsKhuyenMai = KhuyenMaiController::layDanhSachDangHoatDong();
             <div id="buocHetHan" class="buoc"><h3>Mã QR đã hết hạn</h3><p>Hóa đơn đã bị hủy.</p><div class="nut-dong"><button class="secondary" onclick="dongThanhToan()">Đóng</button></div></div>
 
             <div id="buocXong" class="buoc">
-                <h3>Thanh toán thành công</h3><p id="lblKetQua"></p>
-                <div class="nut-dong"><a id="lnkHoaDon" class="btn primary" href="#" target="_blank">In hóa đơn</a><button class="success" onclick="hoaDonMoi()">Hóa đơn mới</button></div>
-            </div>
+    <h3>Thanh toán thành công</h3>
+    <p id="lblKetQua"></p>
+    <div class="nut-dong">
+        <a id="lnkHoaDon" class="btn primary" href="#" target="_blank">In hóa đơn</a>
+        <button class="success" onclick="xacNhanHoanTat()">Xác nhận thanh toán</button>
+    </div>
+</div>
         </div>
     </div>
 
@@ -162,6 +192,7 @@ $dsKhuyenMai = KhuyenMaiController::layDanhSachDangHoatDong();
 const URL_XU_LY = '../ThanhToan/xulythanhtoan.php';
 let gioHang = [];
 let maThanhToan = 0;
+let maHoaDonVuaXong = 0;
 let boDem = null;
 
 const tien = so => Number(so).toLocaleString('vi-VN') + ' đ';
@@ -331,16 +362,30 @@ async function xacNhanChuyenKhoan() {
     } catch (e) { document.getElementById('loiXacNhan').innerText = e.message; }
 }
 function hienKetQua(noiDung, maHoaDon) {
+    maHoaDonVuaXong = maHoaDon;
     document.getElementById('lblKetQua').innerText = noiDung;
     document.getElementById('lnkHoaDon').href = '../ThanhToan/hoadon.php?id=' + maHoaDon;
     hienBuoc('buocXong');
 }
-function hoaDonMoi() {
+
+function xacNhanHoanTat() {
+    const maHD = maHoaDonVuaXong;
     gioHang = [];
     maThanhToan = 0;
+    maHoaDonVuaXong = 0;
     document.getElementById('cboKhuyenMai').value = '';
     veBang();
     dongThanhToan();
+
+    // Hiển thị thông báo xác nhận thành công (UC38 - Bước 4)
+    document.getElementById('noiDungThongBao').innerText =
+        'Xác nhận thanh toán thành công! Hóa đơn HD' + maHD +
+        ' đã chuyển sang trạng thái Đã thanh toán và giao dịch đã được ghi nhận.';
+    document.getElementById('thongBaoXacNhan').style.display = 'flex';
+}
+
+function anThongBao() {
+    document.getElementById('thongBaoXacNhan').style.display = 'none';
 }
 
 document.getElementById('txtMaSP').addEventListener('keydown', e => { if (e.key === 'Enter') themSanPham(); });
